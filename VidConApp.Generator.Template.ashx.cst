@@ -1,0 +1,12 @@
+﻿
+<%@ CodeTemplate Inherits="CodeTemplate" TargetLanguage="C#" Language="C#" Description="NetTiers main template." Debug="True" ResponseEncoding="UTF-8"%>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%-- 要打印的表 --%>
+<%@ Property Name="Table" Type="TableSchema" DeepLoad="True" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="DeveloperName" Type="String" Category="Context" Description="The name to include in the comment header" %>
+<%string sub="%";%>
+<%sub=sub+">";%>
+<%Response.Write("<%"); %>@ WebHandler Language="C#" CodeBehind="<%=Table.Name%>App.ashx.cs" Class="VidConAPP.AjaxServer.<%=Table.Name%>App" <%Response.Write(sub);%>

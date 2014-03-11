@@ -1,0 +1,238 @@
+﻿<%@ CodeTemplate Inherits="CodeTemplate" TargetLanguage="HTML"  Description="NetTiers main template." Debug="True" ResponseEncoding="UTF-8"%>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%-- 要打印的表 --%>
+<%@ Property Name="Table" Type="TableSchema" DeepLoad="True" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+    <title>信息管理</title>
+    <link href="Styles/thickbox.css" type="text/css" rel="Stylesheet" />
+    <link href="Styles/Management.css" type="text/css" rel="Stylesheet" />
+    <link rel="stylesheet" type="text/css" href="Scripts/jquery-alert/jquery.alert.css" />
+    <script type="text/javascript" src="Scripts/jQuery-1.9.1.js"></script>
+    <script type="text/javascript" src="Scripts/jquery-alert/jquery.easydrag.js"></script>
+    <script type="text/javascript" src="Scripts/jquery-alert/jquery.alert.js"></script>
+    <script type="text/javascript" src="../Scripts/DatePicker/WdatePicker.js"></script>
+    <script src="Scripts/thickbox.js" type="text/javascript"></script>
+    <script src="Scripts/Common.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $().ready(function () {
+            var queryBuilder;
+            var ashxParam = { url: "AjaxServer/<%= Table.Name%>App.ashx", pageSize: "15" };
+            var addPage = { title: "添加记录", url: "<%= Table.Name%>Add.htm", width: "800", height: "400" };
+            var editPage = { title: "修改信息", url: "<%= Table.Name%>Edit.htm", width: "800", height: "400" };
+            var detailPage = { title: "详细信息", url: "<%= Table.Name%>Detail.htm", width: "800", height: "400" };
+            var columnInfo =[<%
+            ColumnSchemaCollection columns= Table.Columns; 
+            for(int i=0;i<columns.Count;i++){
+            ColumnSchema col =columns[i];
+            if(i==6||i==columns.Count-1){%>{ "columnName": "<%=GetPropertyName(col.Name)%>", "columnText": "<%=col.Description%>", "width": "100px" ,"style":"text-align:left"}<%break;}else{ %>{ "columnName": "<%=GetPropertyName(col.Name)%>", "columnText": "<%=col.Description%>", "width": "100px" ,"style":"text-align:left"},<%}}%>];
+            initNewGrid(queryBuilder, ashxParam, columnInfo, addPage, editPage, detailPage);
+            initQueryBuildForm("queryBuilderForm");
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <form id="queryBuilderForm" action="#">            
+            <%
+            for(int i=0;i<columns.Count;i++){
+            ColumnSchema col =columns[i];
+            if(i==3)break;
+            %>
+             <label for="text<%=GetPropertyName(col.Name)%>">
+                <%=col.Description%>：</label><input id="text<%=GetPropertyName(col.Name)%>" name="text<%=GetPropertyName(col.Name)%>" type="text" size="20" />
+            &nbsp;&nbsp;&nbsp;
+            <%} %>
+            <input id="submitSearch" type="submit" value="搜索" />
+            </form>
+        </div>
+        <div class="main">
+        <div class="hasResult">
+            <table class="mainTop">
+                <tr>
+                    <td width="12">
+                        <img src="../Images/table/tab_03.gif" width="12" height="30" alt="" />
+                    </td>
+                    <td width="16">
+                        <img src="../Images/table/tb.gif" width="16" height="16" alt="" />
+                    </td>
+                    <td class="tableName">
+                        信息维护
+                    </td>
+                    <td width="530">
+                    </td>
+                    <td>
+                        <input type="checkbox" id="selectAllCheckbox" value="checkbox" />
+                    </td>
+                    <td>
+                        全选
+                    </td>
+                    <td>
+                        <img class="pointer" src="../Images/table/22.gif" width="14" height="14" alt="" id="addAction" />
+                    </td>
+                    <td>
+                        新增
+                    </td>
+                    <td>
+                        <img class="pointer" src="../Images/table/33.gif" width="14" height="14" alt="" id="editAction" />
+                    </td>
+                    <td>
+                        修改
+                    </td>
+                    <td>
+                        <img class="pointer" src="../Images/table/11.gif" width="14" height="14" alt="" id="deleteAction" />
+                    </td>
+                    <td>
+                        删除
+                    </td>
+                    <td width="12">
+                        <img src="../Images/table/tab_07.gif" width="12" height="30" alt="" />
+                    </td>
+                </tr>
+            </table>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;
+                table-layout: fixed;">
+                <tr>
+                    <td width="8" style="background-image: url(../Images/table/tab_12.gif)">
+                        &nbsp;
+                    </td>
+                    <td>
+                        <table id="contentTable" width="100%" border="0" cellpadding="0" cellspacing="1"
+                            bgcolor="#C0C0C0" onmouseover="changeto()" onmouseout="changeback()">
+                        </table>
+                    </td>
+                    <td width="8" style="background-image: url(../Images/table/tab_15.gif)">
+                        &nbsp;
+                    </td>
+                </tr>
+            </table>
+            <div id="pagerDiv" class="pagerDiv">
+                <div id="leftImgDiv" class="leftImgDiv">
+                    <img src="../Images/table/tab_18.gif" width="12" height="35" alt="" /></div>
+                <div id="pageCountDiv" class="pageCountDiv">
+                    共有 <span id="totalCountSpan">120</span> 条记录，每页 <span id="pageCountSpan">120</span>
+                    条，当前第 <span id="pageIndexSpan">1/10</span> 页</div>
+                <div id="pagerButtonDiv" class="pagerButtonDiv">
+                    <a id="firstBut">
+                        <img src="../Images/table/first.gif" width="37" height="15" alt="" /></a> <a id="previousBut">
+                            <img src="../Images/table/back.gif" width="43" height="15" alt="" /></a>
+                    <a id="nextBut">
+                        <img src="../Images/table/next.gif" width="43" height="15" alt="" /></a> <a id="lastBut">
+                            <img src="../Images/table/last.gif" width="37" height="15" alt="" /></a>
+                </div>
+                <div class="goToDiv">
+                    转到第&nbsp;<input type="text" size="4" id="pagerInput" />&nbsp;页
+                </div>
+                <div id="goToButtonDiv" class="goToButtonDiv">
+                    <a id="gotoBut">
+                        <img src="../Images/table/go.gif" width="37" height="15" alt="" /></a>
+                </div>
+                <div id="rightImgDiv" class="rightImgDiv">
+                    <img src="../Images/table/tab_20.gif" width="16" height="35" alt="" />
+                </div>
+            </div>
+            </div>
+            <div class="noResult">
+               
+            </div>
+        </div>
+        <div class="footer">
+        </div>
+    </div>
+</body>
+</html>
+
+<script runat="template">
+
+     public class ColumnNameComparer : System.Collections.Generic.IComparer<ColumnSchema>
+    {
+        public int Compare(ColumnSchema x, ColumnSchema y)
+        {
+            return (x.Name.CompareTo(y.Name));
+        }
+    }
+     // 将数据库数据类型转化为C#数据类型
+     public string DataType2CSharpType(System.Data.DbType dbType)
+    {
+        switch (dbType)
+        {
+            case DbType.AnsiString:
+                return "string";
+            case DbType.AnsiStringFixedLength:
+                return "string";
+            case DbType.Binary: //Answer modified was just 0
+                return "byte[]";
+            case DbType.Boolean:
+                return "bool";
+            case DbType.Byte: //Answer modified was just 0
+                return "bytpe";
+            case DbType.Currency:
+                return "0";
+            case DbType.Date:
+                return "DateTime";
+            case DbType.DateTime:
+                return "DateTime";
+            case DbType.DateTime2:
+                return "DateTime";
+            case DbType.DateTimeOffset:
+                return "DateTime";
+            case DbType.Decimal:
+                return "decimal";
+            case DbType.Double:
+                return "double";
+            case DbType.Guid:
+                return "Guid";
+            case DbType.Int16:
+                return "int16";
+            case DbType.Int32:
+                return "int";
+            case DbType.Int64:
+                return "int64";
+            case DbType.Object:
+                return "object";
+            case DbType.SByte:
+                return "sbyte";
+            case DbType.Single:
+                return "Single";
+            case DbType.String:
+                return "string";
+            case DbType.StringFixedLength:
+                return "string";
+            case DbType.Time:
+                return "DateTime"; //return "DateTime.MaxValue";
+            case DbType.UInt16:
+                return "ushort";
+            case DbType.UInt32:
+                return "uint";
+            case DbType.UInt64:
+                return "ulong";
+            case DbType.VarNumeric:
+                return "decimal";
+            case DbType.Xml:
+                return "string";
+            default:
+                return "null";
+        }
+    } 
+     
+    //根据实体类得到其实例名称，实体类的第一个大写字母变小写
+     public string GetModuleName(string entityName){
+        string moudleName = entityName.Substring(0, 1).ToLower()+entityName.Substring(1,entityName.Length-1);    
+        return moudleName;
+     }
+    
+     //根据表的列名得到其实体类的属性名称，第一个字母变为大写
+     public string GetPropertyName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-1);    
+        return propertyName;
+     }
+    
+    
+</script>

@@ -1,0 +1,173 @@
+﻿<%@ CodeTemplate Inherits="CodeTemplate" TargetLanguage="HTML"  Description="NetTiers main template." Debug="True" ResponseEncoding="UTF-8"%>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%-- 要打印的表 --%>
+<%@ Property Name="Table" Type="TableSchema" DeepLoad="True" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head runat="server">
+    <title>添加新记录</title>
+    <link href="Styles/AddOrEditPage.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="Styles/validationEngine.jquery.css" type="text/css" />
+    <script type="text/javascript" src="Scripts/jQuery-1.9.1.js"></script>
+    <script type="text/javascript" src="Scripts/jquery.validationEngine-cn.js"></script>
+    <script type="text/javascript" src="Scripts/jquery.validationEngine.js"></script>
+    <script type="text/javascript" src="Scripts/Common.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var ajaxParam = { "url": "AjaxServer/<%=Table.Name%>App.ashx", "data": { "action": "01"} }
+            initAddPage("edit<%=Table.Name%>Form", ajaxParam);
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <form id="edit<%=Table.Name%>Form" runat="server">
+        <table class="mainTable">
+            <tr>
+                <td class="mainTable_TitleTd" colspan="4">
+                    添加新记录
+                </td>
+            </tr>
+            <%
+            ColumnSchemaCollection columns= Table.Columns; 
+            int i=0;
+            while(i<columns.Count){
+                ColumnSchema col =columns[i];
+                if(i==columns.Count-1){
+            %>
+           <tr>
+                <td class="mainTable_LeftTd">
+                    <label for="text<%=GetPropertyName(col.Name)%>">
+                        <%=col.Description%>：</label> 
+                </td>
+                <td class="mainTable_RightTd" colspan="3">
+                    <input name="text<%=GetPropertyName(col.Name)%>" type="text" size="35" />
+                </td>
+             </tr>
+            <%}else{%>
+             <tr>
+                <td class="mainTable_LeftTd">
+                    <label for="text<%=GetPropertyName(col.Name)%>">
+                        <%=col.Description%>：</label> 
+                </td>
+                <td class="mainTable_RightTd">
+                    <input name="text<%=GetPropertyName(col.Name)%>" type="text" size="35" />
+                </td>
+                <%if(i<columns.Count-1)
+                col =columns[i+1]; %>
+                <td class="mainTable_LeftTd">
+                    <label for="text<%=GetPropertyName(col.Name)%>">
+                        <%=col.Description%>：</label>
+                </td>
+                <td class="mainTable_RightTd">
+                    <input name="text<%=GetPropertyName(col.Name)%>" type="text" size="35" />
+                </td>                
+            </tr>
+            <%}
+            i=i+2;
+            } %>           
+            <tr>
+                <td class="mainTable_ButtonTd" colspan="4">
+                    <input class="button" type="submit" value="提交" />&nbsp;&nbsp;
+                    <input class="button" type="reset" value="关闭" onclick="window.parent.tb_remove();" />
+                </td>
+            </tr>
+        </table>
+        </form>
+    </div>
+</body>
+</html>
+
+
+<script runat="template">
+
+     public class ColumnNameComparer : System.Collections.Generic.IComparer<ColumnSchema>
+    {
+        public int Compare(ColumnSchema x, ColumnSchema y)
+        {
+            return (x.Name.CompareTo(y.Name));
+        }
+    }
+     // 将数据库数据类型转化为C#数据类型
+     public string DataType2CSharpType(System.Data.DbType dbType)
+    {
+        switch (dbType)
+        {
+            case DbType.AnsiString:
+                return "string";
+            case DbType.AnsiStringFixedLength:
+                return "string";
+            case DbType.Binary: //Answer modified was just 0
+                return "byte[]";
+            case DbType.Boolean:
+                return "bool";
+            case DbType.Byte: //Answer modified was just 0
+                return "bytpe";
+            case DbType.Currency:
+                return "0";
+            case DbType.Date:
+                return "DateTime";
+            case DbType.DateTime:
+                return "DateTime";
+            case DbType.DateTime2:
+                return "DateTime";
+            case DbType.DateTimeOffset:
+                return "DateTime";
+            case DbType.Decimal:
+                return "decimal";
+            case DbType.Double:
+                return "double";
+            case DbType.Guid:
+                return "Guid";
+            case DbType.Int16:
+                return "int16";
+            case DbType.Int32:
+                return "int";
+            case DbType.Int64:
+                return "int64";
+            case DbType.Object:
+                return "object";
+            case DbType.SByte:
+                return "sbyte";
+            case DbType.Single:
+                return "Single";
+            case DbType.String:
+                return "string";
+            case DbType.StringFixedLength:
+                return "string";
+            case DbType.Time:
+                return "DateTime"; //return "DateTime.MaxValue";
+            case DbType.UInt16:
+                return "ushort";
+            case DbType.UInt32:
+                return "uint";
+            case DbType.UInt64:
+                return "ulong";
+            case DbType.VarNumeric:
+                return "decimal";
+            case DbType.Xml:
+                return "string";
+            default:
+                return "null";
+        }
+    } 
+     
+    //根据实体类得到其实例名称，实体类的第一个大写字母变小写
+     public string GetModuleName(string entityName){
+        string moudleName = entityName.Substring(0, 1).ToLower()+entityName.Substring(1,entityName.Length-1);    
+        return moudleName;
+     }
+    
+     //根据表的列名得到其实体类的属性名称，第一个字母变为大写
+     public string GetPropertyName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-1);    
+        return propertyName;
+     }
+    
+    
+</script>

@@ -1,0 +1,215 @@
+﻿<%@ CodeTemplate Inherits="CodeTemplate" TargetLanguage="C#" Language="C#" Description="NetTiers main template." Debug="True" ResponseEncoding="UTF-8"%>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%-- 要打印的表 --%>
+<%@ Property Name="Table" Type="TableSchema" DeepLoad="True" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="DeveloperName" Type="String" Category="Context" Description="The name to include in the comment header" %>
+
+/***********************************************************************
+ * Module: <%= Table.Name%>.cs
+ * Author: <%= DeveloperName%>
+ * Modified: <%= DateTime.Now %>
+ ***********************************************************************/
+
+using System;
+using System.Collections.Generic;
+using System.Data.SqlTypes;
+using System.Linq;
+using System.Text;
+
+namespace VidConEntity
+{
+    /// <summary>
+    /// 实体类<%= Table.Name%>，<%=Table.Description%>
+    /// </summary>
+    public class <%= Table.Name%>
+    {
+    
+        <%if(Table.HasPrimaryKey&&Table.PrimaryKey.MemberColumns.Count==1) {%>
+        //主键，被赋值后，仅用于查询，不用于增删改。
+        public virtual <%=DataType2CSharpType(Table.PrimaryKey.MemberColumns[0].DataType)%> PrimaryKey{ get; set; }        
+        <%} 
+        
+        //获取数据表的所有列，并按字母排序
+        ColumnSchemaCollection columns= Table.Columns; 
+        ColumnNameComparer com=new ColumnNameComparer();
+        columns.Sort(com);       
+        
+        for(int i=0;i<columns.Count;i++){
+            ColumnSchema col =columns[i];
+        %>
+        
+        //<%=col.Description %>        
+        public virtual <%= DataType2CSharpType(col.DataType)%> <%=GetPropertyName(col.Name)%>{ get; set; }     
+       <% foreach(TableKeySchema tks in Table.ForeignKeys)
+        {
+            foreach(MemberColumnSchema mcs in tks.ForeignKeyMemberColumns)
+            {
+                //如果当前列是外键列
+                if(mcs.Name == col.Name){%>
+        
+        //此字段为对应主表中记录的名称（文本）
+        public virtual string <%=GetRefTextName(col.Name)%>{ get; set; }                         
+                <%break;
+                }
+            }
+        }%>        
+        <%if(i==columns.Count-1){if(Table.ForeignKeyColumns.Count!=0)%>
+        
+        //多对一关系中，一端实体对象
+            <%for(int m=0;m<columns.Count;m++){
+                ColumnSchema coll =columns[m];
+                foreach(TableKeySchema tks in Table.ForeignKeys)
+                {%>       
+                    <%foreach(MemberColumnSchema mcs in tks.ForeignKeyMemberColumns)
+                    {if(mcs.Name == coll.Name){%>                                                          
+        [JsonIgnore]
+        public virtual <%=tks.PrimaryKeyTable.Name%> <%=GetRefEntityName(coll.Name)%>{ get; set; }                        
+                <%break;
+                }
+            }
+        }
+        }
+        }
+        } %>
+        
+        //一对多关系中，多端数据列表
+            <%
+        TableKeySchemaCollection keyCol= Table.Keys;
+        keyCol.Sort(new TableKeyNameComparer());
+        foreach(TableKeySchema tks in keyCol)
+                {
+             if(tks.ForeignKeyTable.Name!=Table.Name)
+                {%>
+        [JsonIgnore]
+        public virtual <%=tks.ForeignKeyTable.Name%> <%=GetRefListName(tks.ForeignKeyTable.Name)%>{ get; set; }             
+        <% }}%> 
+        
+    }
+}
+
+
+
+
+
+
+
+
+<script runat="template">
+
+     public class ColumnNameComparer : System.Collections.Generic.IComparer<ColumnSchema>
+    {
+        public int Compare(ColumnSchema x, ColumnSchema y)
+        {
+            return (x.Name.CompareTo(y.Name));
+        }
+    }
+    
+         public class TableKeyNameComparer : System.Collections.Generic.IComparer<TableKeySchema>
+    {
+        public int Compare(TableKeySchema x, TableKeySchema y)
+        {
+            return (x.Name.CompareTo(y.Name));
+        }
+    }
+     // 将数据库数据类型转化为C#数据类型
+     public string DataType2CSharpType(System.Data.DbType dbType)
+    {        
+        switch (dbType)
+        {
+            case DbType.AnsiString:
+                return "string";
+            case DbType.AnsiStringFixedLength:
+                return "char?";
+            case DbType.Binary: //Answer modified was just 0
+                return "byte[]";
+            case DbType.Boolean:
+                return "bool?";
+            case DbType.Byte: //Answer modified was just 0
+                return "byte?";
+            case DbType.Currency:
+                return "0";
+            case DbType.Date:
+                return "DateTime";
+            case DbType.DateTime:
+                return "DateTime";
+            case DbType.DateTime2:
+                return "DateTime";
+            case DbType.DateTimeOffset:
+                return "DateTime";
+            case DbType.Decimal:
+                return "decimal?";
+            case DbType.Double:
+                return "double?";
+            case DbType.Guid:
+                return "Guid";
+            case DbType.Int16:
+                return "int16";
+            case DbType.Int32:
+                return "int?";
+            case DbType.Int64:
+                return "int64?";
+            case DbType.Object:
+                return "object?";
+            case DbType.SByte:
+                return "sbyte?";
+            case DbType.Single:
+                return "Single";
+            case DbType.String:
+                return "string";
+            case DbType.StringFixedLength:
+                return "string";
+            case DbType.Time:
+                return "DateTime"; //return "DateTime.MaxValue";
+            case DbType.UInt16:
+                return "ushort?";
+            case DbType.UInt32:
+                return "uint?";
+            case DbType.UInt64:
+                return "ulong?";
+            case DbType.VarNumeric:
+                return "decimal?";
+            case DbType.Xml:
+                return "string";
+            default:
+                return "null";
+        }
+    } 
+     
+    //根据实体类得到其实例名称，实体类的第一个大写字母变小写
+     public string GetModuleName(string entityName){
+        string moudleName = entityName.Substring(0, 1).ToLower()+entityName.Substring(1,entityName.Length-1);    
+        return moudleName;
+     }
+    
+     //根据表的列名得到其实体类的属性名称，第一个字母变为大写
+     public string GetPropertyName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-1);    
+        return propertyName;
+     }
+     //多对一关系，存放一端对象名称。外键字段对应引用类属性名称，截取最后一个大写字母前的字符，加后缀Ref
+    public string GetRefEntityName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-3);    
+       int lastUpperCode=0;
+        for(int i=0;i<ColumnName.Length;i++)
+         if (ColumnName[i] >= 'A' && ColumnName[i]<= 'Z')
+             lastUpperCode=i;
+        return propertyName.Substring(0,lastUpperCode)+"Ref";
+     }
+    //一对对关系，存放多端列表名称。根据多方表名，加后缀List。
+    public string GetRefListName(string refEntityName){
+
+        return refEntityName+"List";
+     }
+    //获取外键字段对应文本字段名称的函数，截取最后一个大写字母前的字符。
+    public string GetRefTextName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-3);    
+       int lastUpperCode=0;
+        for(int i=0;i<ColumnName.Length;i++)
+         if (ColumnName[i] >= 'A' && ColumnName[i]<= 'Z')
+             lastUpperCode=i;
+        return propertyName.Substring(0,lastUpperCode)+"Name";
+     }
+</script>

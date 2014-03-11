@@ -1,0 +1,64 @@
+﻿<%@ Template OutputType="None"  Language="C#" TargetLanguage="Text" %>
+
+<%-- 加载访问数据库的组件SchemaExplorer,并声明其使用的命名空间 --%>
+<%@ Assembly Name="SchemaExplorer"%>
+<%@ Import Namespace="SchemaExplorer"%>
+<%@ Import Namespace="System.IO"%>
+
+<%-- 数据库 --%>
+<%@ Property Name="SourceDatabase" Type="SchemaExplorer.DatabaseSchema" DeepLoad="True" Optional="False" Category="01. GettingStarted - Required" Description="Database that the tables views, and storedprocedures should be based on. IMPORTANT!!! If SourceTables and SourceViews areleft blank, the Entire Database will then be generated."%>
+
+<%-- 注册实体层ashx文件模板 --%>
+<%@ Register Name="ashxTemplate" Template="VidConApp.Generator.Template.ashx.cst" MergeProperties="Flase" ExcludeProperties=""%>
+
+<%-- 注册实体层ashx.cs文件模板 --%>
+<%@ Register Name="csTemplate" Template="VidConApp.Generator.Template.ashx.cs.cst" MergeProperties="Flase" ExcludeProperties=""%>
+
+
+<%
+//创建实体层Entity类
+GenerateAppClasses();
+//Debug.WriteLine("OK");
+%>
+<script runat="template">
+    //解决方案输出路径
+private string Directory = String.Empty;    
+    [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))] 
+    [Optional, NotChecked]
+    [DefaultValue("")]
+    public string OutputDirectory 
+    { 
+        get
+        {
+            return Directory;
+        }
+        set
+        {
+            if (value.EndsWith("\\")) value = value.Substring(0, value.Length -1);
+            Directory = value;
+        } 
+    }
+</script>
+
+<script runat="template">
+//生成实体HttpHandler类
+private void GenerateAppClasses()
+    {
+        CodeTemplate ashxTemplate =new ashxTemplate();
+        CodeTemplate csTemplate =new csTemplate();
+        foreach(TableSchema table in this.SourceDatabase.Tables)
+        {
+            string csFileDirectory = OutputDirectory +"\\"+ table.Name +"App.ashx.cs";
+            string ashxFileDirectory = OutputDirectory +"\\"+ table.Name +"App.ashx";
+
+            ashxTemplate.SetProperty("Table",table);
+            ashxTemplate.SetProperty("DeveloperName","MengXianzhi");
+            ashxTemplate.RenderToFile(ashxFileDirectory,true);
+
+            csTemplate.SetProperty("Table",table);
+            csTemplate.SetProperty("DeveloperName","MengXianzhi");
+            csTemplate.RenderToFile(csFileDirectory,true);
+            
+        }
+    }
+</script>

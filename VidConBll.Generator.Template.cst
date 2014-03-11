@@ -1,0 +1,631 @@
+﻿<%@ CodeTemplate Inherits="CodeTemplate" TargetLanguage="C#" Language="C#" Description="NetTiers main template." Debug="True" ResponseEncoding="UTF-8"%>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%-- 要打印的表 --%>
+<%@ Property Name="Table" Type="TableSchema" DeepLoad="True" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="DeveloperName" Type="String" Category="Context" Description="The name to include in the comment header" %>
+
+/***********************************************************************
+ * Module:  <%= Table.Name%>Bll.cs
+ * Author: <%= DeveloperName%>
+ * Modified: <%= DateTime.Now %>
+ ***********************************************************************/
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Web;
+using System.Web.SessionState;
+using VidConDAL;
+using VidConEntity;
+using VidConUtility;
+
+namespace VidConBLL
+{
+    /// <summary>
+    /// <%= Table.Name%>的业务逻辑层
+    /// </summary>
+    public class <%= Table.Name%>Bll
+    {
+        /// <summary>
+        /// 添加一条新记录
+        /// </summary>
+        /// <param name="<%= GetModuleName(Table.Name)%>"><%= Table.Name%>实体</param>
+        /// <returns>添加结果，包括是否插入成功、记录主键等信息</returns>
+        public static ResultModel Insert(<%= Table.Name%> <%= GetModuleName(Table.Name)%>)
+        {
+            OperationLog log = new OperationLog();
+            ResultModel result = new ResultModel();
+            object id = "";
+            try
+            {
+                log.LogId = Guid.NewGuid().ToString("N");
+                log.SystemUserId = CurrentSession.getUser().UserId;                                
+                log.OperationType = SymbolicConstant.OPERATIONTYPE_INSERT;
+                log.OperationContent = SymbolicConstant.OPERATIONCONTENT_INSERT;
+                log.AddTime = DateTime.Now;
+                log.OperationTable = typeof(<%=Table.Name%>).Name;                  
+                
+                id = <%= Table.Name%>Dal.Insert(<%= GetModuleName(Table.Name)%>);             
+                
+                log.ObjectRecordId = Convert.ToString(id);               
+                log.ResultCode = SymbolicConstant.RESULTCODE_INSERT_SUCCESS;
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
+                log.ResultMessage=SymbolicConstant.RESULTMESSAGE_INSERT_SUCCESS;
+                
+                result.IsSuccess = true;
+                result.ObjectRecordId = id.ToString();
+                result.ResultCode = SymbolicConstant.RESULTCODE_INSERT_SUCCESS;
+                result.ResultMessage = SymbolicConstant.RESULTMESSAGE_INSERT_SUCCESS;
+                
+                return result;
+            }
+            catch (Exception exception)
+            {
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_FALSE;
+                log.ObjectRecordId = Convert.ToString(id);
+                log.ResultCode = SymbolicConstant.RESULTCODE_INSERT_ERROR;
+                log.ResultMessage=exception.Message;
+                                
+                result.IsSuccess = false;
+                result.ObjectRecordId = id.ToString();
+                result.ResultCode = SymbolicConstant.RESULTCODE_INSERT_ERROR;
+                result.ResultMessage = exception.Message;
+                
+                return result;
+            }
+            finally
+            {
+                OperationLogBll.Insert(log);
+            }
+
+        }
+
+        /// <summary>
+        /// 添加一条新记录
+        /// </summary>
+        /// <param name="<%= GetModuleName(Table.Name)%>"><%= Table.Name%>实体</param>
+        /// <param name="isLog">是否写入日志</param>
+        /// <returns>添加结果，包括是否插入成功、记录主键等信息</returns>
+        public static ResultModel Insert(<%= Table.Name%> <%= GetModuleName(Table.Name)%>, bool isLog)
+        {
+            if (isLog)
+                return Insert(<%= GetModuleName(Table.Name)%>);
+            ResultModel result = new ResultModel();
+            object id = "";
+            try
+            {
+                id = <%= Table.Name%>Dal.Insert(<%= GetModuleName(Table.Name)%>);
+
+                result.IsSuccess = true;
+                result.ObjectRecordId = id.ToString();
+                result.ResultCode = SymbolicConstant.RESULTCODE_INSERT_SUCCESS;
+                result.ResultMessage = SymbolicConstant.RESULTMESSAGE_INSERT_SUCCESS;
+
+                return result;
+            }
+            catch (Exception exception)
+            {
+                result.IsSuccess = false;
+                result.ObjectRecordId = id.ToString();
+                result.ResultCode = SymbolicConstant.RESULTCODE_INSERT_ERROR;
+                result.ResultMessage = exception.Message;
+                
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 根据记录主键，删除指定记录。
+        /// </summary>
+        /// <param name="<%= GetModuleName(Table.Name)%>Id">记录主键</param>
+        /// <returns>删除结果，包括是否删除成功、记录主键等信息</returns>
+        public static ResultModel Delete(string <%= GetModuleName(Table.Name)%>Id)
+        {
+            OperationLog log = new OperationLog();
+            ResultModel result = new ResultModel();
+            try
+            {                
+                log.LogId = System.Guid.NewGuid().ToString("N");
+                log.SystemUserId = CurrentSession.getUser().UserId;
+                log.OperationType = SymbolicConstant.OPERATIONTYPE_DELETE;
+                log.OperationContent = SymbolicConstant.OPERATIONCONTENT_DELETE;
+                log.AddTime = DateTime.Now;
+                log.ObjectRecordId = <%= GetModuleName(Table.Name)%>Id;
+                log.OperationTable = typeof(<%=Table.Name%>).Name;
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
+                log.ResultCode = SymbolicConstant.RESULTCODE_DELETE_SUCCESS;
+                log.ResultMessage=SymbolicConstant.RESULTMESSAGE_DELETE_SUCCESS;
+
+                <%= Table.Name%> <%= GetModuleName(Table.Name)%> =(<%= Table.Name%>)Get<%= Table.Name%>ById(<%= GetModuleName(Table.Name)%>Id).Data;
+                <%= Table.Name%>Dal.Delete(<%= GetModuleName(Table.Name)%>);
+
+                result.IsSuccess = true;
+                result.ObjectRecordId = <%= GetModuleName(Table.Name)%>Id;
+                result.ResultCode = SymbolicConstant.RESULTCODE_DELETE_SUCCESS;
+                result.ResultMessage = SymbolicConstant.RESULTMESSAGE_DELETE_SUCCESS;
+
+                return result;
+            }
+            catch (Exception exception)
+            {
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_FALSE;
+                log.ResultCode = SymbolicConstant.RESULTCODE_DELETE_ERROR;
+                log.ResultMessage=exception.Message;
+                
+                result.IsSuccess = false;
+                result.ObjectRecordId = <%= GetModuleName(Table.Name)%>Id;
+                result.ResultCode = SymbolicConstant.RESULTCODE_DELETE_ERROR;                
+                result.ResultMessage = exception.Message;
+
+                return result;
+            }
+            finally
+            {
+                OperationLogBll.Insert(log);
+            }
+
+        }
+
+        /// <summary>
+        /// 根据记录主键，删除指定记录。
+        /// </summary>
+        /// <param name="userId">记录主键</param>
+        /// <param name="isLog">是否写入日志</param>
+        /// <returns>删除结果，包括是否删除成功、记录主键等信息</returns>
+        public static ResultModel Delete(string <%= GetModuleName(Table.Name)%>Id, bool isLog)
+        {
+            if (isLog)
+                return Delete(<%= GetModuleName(Table.Name)%>Id);
+            ResultModel result = new ResultModel();
+            try
+            {
+                <%= Table.Name%> <%= GetModuleName(Table.Name)%> =(<%= Table.Name%>)Get<%= Table.Name%>ById(<%= GetModuleName(Table.Name)%>Id).Data;
+                <%=Table.Name%>Dal.Delete(<%= GetModuleName(Table.Name)%>);
+
+                result.IsSuccess = true;
+                result.ObjectRecordId = <%= GetModuleName(Table.Name)%>Id;
+                result.ResultCode = SymbolicConstant.RESULTCODE_DELETE_SUCCESS;
+                result.ResultMessage = SymbolicConstant.RESULTMESSAGE_DELETE_SUCCESS;
+                
+                return result;
+            }
+            catch (Exception exception)
+            {
+                result.IsSuccess = false;
+                result.ObjectRecordId = <%= GetModuleName(Table.Name)%>Id;
+                result.ResultCode = SymbolicConstant.RESULTCODE_DELETE_ERROR;                
+                result.ResultMessage = exception.Message;
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 修改某条记录
+        /// </summary>
+        /// <param name="user">要修改记录对应的实体</param>
+        /// <returns>修改结果，包括是否修改成功、记录主键等信息</returns>
+        public static ResultModel Update(<%= Table.Name%> <%= GetModuleName(Table.Name)%>)
+        {
+            OperationLog log = new OperationLog();
+            ResultModel result = new ResultModel();
+
+            try
+            {
+
+                log.AddTime = DateTime.Now;
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
+                log.LogId = System.Guid.NewGuid().ToString("N");
+                log.OperationContent = SymbolicConstant.OPERATIONCONTENT_UPDATE;
+                log.OperationTable = typeof(<%=Table.Name%>).Name;
+                log.OperationType = SymbolicConstant.OPERATIONTYPE_UPDATE;
+                log.ResultCode = SymbolicConstant.RESULTCODE_UPDATE_SUCCESS;
+                log.ResultMessage=SymbolicConstant.RESULTMESSAGE_UPDATE_SUCCESS;
+                log.SystemUserId = CurrentSession.getUser().UserId;
+
+                log.ObjectRecordId = <%if(Table.HasPrimaryKey){%><%= GetModuleName(Table.Name)%>.<%if(DataType2CSharpType(Table.PrimaryKey.MemberColumns[0].DataType)!="string"){%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%>.ToString()<%}else{%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%><%}}else{%>null<%}%>;
+                <%= Table.Name%>Dal.Update(<%= GetModuleName(Table.Name)%>);
+                
+                result.IsSuccess = true;
+                result.ObjectRecordId = <%if(Table.HasPrimaryKey){%><%= GetModuleName(Table.Name)%>.<%if(DataType2CSharpType(Table.PrimaryKey.MemberColumns[0].DataType)!="string"){%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%>.ToString()<%}else{%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%><%}}else{%>null<%}%>;
+                result.ResultCode = SymbolicConstant.RESULTCODE_UPDATE_SUCCESS;
+                result.ResultMessage = SymbolicConstant.RESULTMESSAGE_UPDATE_SUCCESS;
+
+                return result;
+            }
+            catch (Exception exception)
+            {
+                log.ResultCode = SymbolicConstant.RESULTCODE_UPDATE_ERROR;
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_FALSE;
+                log.ResultMessage=exception.Message;                     
+
+                result.IsSuccess = false;
+                result.ObjectRecordId =<%if(Table.HasPrimaryKey){%><%= GetModuleName(Table.Name)%>.<%if(DataType2CSharpType(Table.PrimaryKey.MemberColumns[0].DataType)!="string"){%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%>.ToString()<%}else{%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%><%}}else{%>null<%}%>;
+                result.ResultCode = SymbolicConstant.RESULTCODE_UPDATE_ERROR;
+                result.ResultMessage = exception.Message;
+                
+
+                return result;
+            }
+            finally
+            {
+                OperationLogBll.Insert(log);
+            }
+        }
+
+        /// <summary>
+        /// 修改某条记录
+        /// </summary>
+        /// <param name="user">要修改记录对应的实体</param>
+        /// <param name="isLog">是否写入日志</param>
+        /// <returns>修改结果，包括是否修改成功、记录主键等信息</returns>
+        public static ResultModel Update(<%= Table.Name%> <%= GetModuleName(Table.Name)%>, bool isLog)
+        {
+            if (isLog)
+                return Update(<%= GetModuleName(Table.Name)%>);
+
+            ResultModel result = new ResultModel();
+
+            try
+            {
+                <%= Table.Name%>Dal.Update(<%= GetModuleName(Table.Name)%>);
+
+                result.IsSuccess = true;
+                result.ObjectRecordId = <%if(Table.HasPrimaryKey){%><%= GetModuleName(Table.Name)%>.<%if(DataType2CSharpType(Table.PrimaryKey.MemberColumns[0].DataType)!="string"){%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%>.ToString()<%}else{%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%><%}}else{%>null<%}%>;
+                result.ResultCode = SymbolicConstant.RESULTCODE_UPDATE_SUCCESS;
+                result.ResultMessage = SymbolicConstant.RESULTMESSAGE_UPDATE_SUCCESS;
+
+                return result;
+            }
+            catch (Exception exception)
+            {
+                result.IsSuccess = false;
+                result.ObjectRecordId =<%if(Table.HasPrimaryKey){%><%= GetModuleName(Table.Name)%>.<%if(DataType2CSharpType(Table.PrimaryKey.MemberColumns[0].DataType)!="string"){%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%>.ToString()<%}else{%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%><%}}else{%>null<%}%>;
+                result.ResultCode = SymbolicConstant.RESULTCODE_UPDATE_ERROR;
+                result.ResultMessage = exception.Message;
+                
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 根据主键查询指定记录
+        /// </summary>
+        /// <param name="userId">主键</param>
+        /// <returns>查询结果，封装了查询出的实体</returns>
+        public static ResultModel Get<%= Table.Name%>ById(string <%= GetModuleName(Table.Name)%>Id)
+        {
+            OperationLog log = new OperationLog();
+            <%= Table.Name%> <%= GetModuleName(Table.Name)%> = new <%= Table.Name%>();
+            ResultModel result = new ResultModel();
+
+            try
+            {
+                <%= GetModuleName(Table.Name)%>  = <%= Table.Name%>Dal.GetModel(<%= GetModuleName(Table.Name)%>Id);
+                
+                log.AddTime = DateTime.Now;
+                log.LogId = System.Guid.NewGuid().ToString("N");
+                log.OperationType = SymbolicConstant.OPERATIONTYPE_GETMODEL;
+                log.OperationContent = SymbolicConstant.OPERATIONCONTENT_GETMODEL;
+                log.OperationTable = typeof(<%=Table.Name%>).Name;
+                log.ObjectRecordId = <%= GetModuleName(Table.Name)%>Id;
+                log.ResultCode = SymbolicConstant.RESULTCODE_GETMODEL_SUCCESS;
+                log.ResultMessage=SymbolicConstant.RESULTMESSAGE_GETMODEL_SUCCESS;
+                log.SystemUserId = CurrentSession.getUser().UserId;
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
+
+                result.Data =  <%= GetModuleName(Table.Name)%>;
+                result.IsSuccess = true;
+                result.ResultCode = SymbolicConstant.RESULTCODE_GETMODEL_SUCCESS;
+                result.ResultMessage=SymbolicConstant.RESULTMESSAGE_GETMODEL_SUCCESS;
+                return result;
+            }
+            catch (Exception exception)
+            {
+                log.ResultCode = SymbolicConstant.RESULTCODE_GETMODEL_ERROR;
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_FALSE;
+                log.ResultMessage=exception.Message;
+  
+                result.IsSuccess = false;
+                result.ResultCode = SymbolicConstant.RESULTCODE_GETMODEL_ERROR;
+                result.ResultMessage = exception.Message;
+
+                return result;
+            }
+            finally
+            {
+                OperationLogBll.Insert(log);
+            }
+        }
+
+        /// <summary>
+        /// 根据主键查询指定记录
+        /// </summary>
+        /// <param name="<%= GetModuleName(Table.Name)%>Id">主键</param>
+        /// <param name="isLog">是否写入日志</param>
+        /// <returns>查询结果，封装了查询出的实体</returns>
+        public static ResultModel Get<%= Table.Name%>ById(string <%= GetModuleName(Table.Name)%>Id, bool isLog)
+        {
+            if (isLog)
+                return Get<%= Table.Name%>ById(<%= GetModuleName(Table.Name)%>Id);
+            <%= Table.Name%> <%= GetModuleName(Table.Name)%> = new <%= Table.Name%>();
+            ResultModel result = new ResultModel();
+            
+            try
+            {
+                <%= GetModuleName(Table.Name)%>= <%= Table.Name%>Dal.GetModel(<%= GetModuleName(Table.Name)%>Id);
+                result.Data =  <%= GetModuleName(Table.Name)%>;
+                result.IsSuccess = true;
+                result.ResultCode = SymbolicConstant.RESULTCODE_GETMODEL_SUCCESS;
+                result.ResultMessage=SymbolicConstant.RESULTMESSAGE_GETMODEL_SUCCESS;
+                
+                return result;
+            }
+            catch (Exception exception)
+            {
+                result.IsSuccess = false;
+                result.ResultCode = SymbolicConstant.RESULTCODE_GETMODEL_ERROR;
+                result.ResultMessage = exception.Message;
+
+                return result;
+            }
+        }
+  
+        /// <summary>
+        /// 根据查询条件获取<%= Table.Name%>表中符合查询条件的记录
+        /// </summary>
+        /// <param name="queryTerms">自定义查询条件</param>
+        /// <returns>查询结果，封装了查询的数据信息</returns>
+        public static ResultModel Get<%= Table.Name%>List(QueryTerms queryTerms)
+        {
+            List<<%= Table.Name%>> <%= GetModuleName(Table.Name)%>List = new List<<%= Table.Name%>>();
+            OperationLog log = new OperationLog();
+            int totalCount = 0;
+            ResultModel result = new ResultModel();
+
+            try
+            {
+                log.AddTime = DateTime.Now;                
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
+                log.LogId = System.Guid.NewGuid().ToString("N");
+                log.OperationContent = SymbolicConstant.OPERATIONCONTENT_GETLIST;
+                log.OperationTable = typeof(<%=Table.Name%>).Name;
+                log.OperationType =SymbolicConstant.OPERATIONTYPE_GETLIST;
+                log.ResultCode = SymbolicConstant.RESULTCODE_GETLIST_SUCCESS;
+                log.ResultMessage=SymbolicConstant.RESULTMESSAGE_GETLIST_SUCCESS;
+                log.SystemUserId = CurrentSession.getUser().UserId;
+                
+                <%= GetModuleName(Table.Name)%>List = (List<<%= Table.Name%>>)(<%= Table.Name%>Dal.GetList(queryTerms));                
+                totalCount=Convert.ToInt32(SystemUserDal.GetTotalCount(queryTerms));
+                
+                result.Data = <%= GetModuleName(Table.Name)%>List;
+                result.DataSize = totalCount;
+                result.IsSuccess = true;
+                result.ResultCode = SymbolicConstant.RESULTCODE_GETLIST_SUCCESS;
+                result.ResultMessage = SymbolicConstant.RESULTMESSAGE_GETLIST_SUCCESS;
+
+                return result;
+            }
+            catch (Exception exception)
+            {
+                log.ResultCode = SymbolicConstant.RESULTCODE_GETLIST_ERROR;
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_FALSE;
+                log.ResultMessage=exception.Message;
+            
+                result.IsSuccess = false;
+                result.ResultCode = SymbolicConstant.RESULTCODE_GETLIST_ERROR;
+                result.ResultMessage = exception.Message;
+      
+                return result;
+            }
+            finally
+            {
+                OperationLogBll.Insert(log);
+            }
+        }
+
+        /// <summary>
+        /// 根据查询条件获取<%= Table.Name%>表中符合查询条件的记录
+        /// </summary>
+        /// <param name="queryTerms">自定义查询条件</param>
+        /// <param name="isLog">是否写入日志</param>
+        /// <returns>查询结果，封装了查询的数据信息</returns>
+        public static ResultModel Get<%= Table.Name%>List(QueryTerms queryTerms, bool isLog)
+        {
+            if (isLog)
+                return Get<%= Table.Name%>List(queryTerms);
+            List<<%= Table.Name%>> <%= GetModuleName(Table.Name)%>List = new List<<%= Table.Name%>>();
+            int totalCount = 0;
+            ResultModel result = new ResultModel();
+            
+            try
+            {
+                <%= GetModuleName(Table.Name)%>List = (List<<%= Table.Name%>>)(<%= Table.Name%>Dal.GetList(queryTerms));
+                totalCount=Convert.ToInt32(SystemUserDal.GetTotalCount(queryTerms));
+              
+                
+                result.Data = <%= GetModuleName(Table.Name)%>List;
+                result.DataSize = totalCount;
+                result.IsSuccess = true;
+                result.ResultCode = SymbolicConstant.RESULTCODE_GETLIST_SUCCESS;
+                result.ResultMessage = SymbolicConstant.RESULTMESSAGE_GETLIST_SUCCESS;
+
+                return result;
+            }
+            catch (Exception exception)
+            {            
+                result.IsSuccess = false;
+                result.ResultCode = SymbolicConstant.RESULTCODE_GETLIST_ERROR;
+                result.ResultMessage = exception.Message;
+      
+                return result;
+            }
+        }
+        
+        /// <summary>
+        /// 删除数据库<%= Table.Name%>表中的所有记录
+        /// </summary>
+        /// <returns>删除结果，包括是删除成功、删除的记录数等信息</returns>
+        public static ResultModel DeleteAll()
+        {
+            OperationLog log = new OperationLog();
+            ResultModel result = new ResultModel();
+            try
+            {
+                log.AddTime = DateTime.Now;
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
+                log.LogId = System.Guid.NewGuid().ToString("N");
+                log.OperationContent = SymbolicConstant.OPERATIONCONTENT_DELETEALL;
+                log.OperationTable = typeof(<%=Table.Name%>).Name;
+                log.OperationType = SymbolicConstant.OPERATIONTYPE_DELETEALL;
+                log.ResultCode = SymbolicConstant.RESULTCODE_DELETEALL_SUCCESS;
+                log.ResultMessage=SymbolicConstant.RESULTMESSAGE_DELETEALL_SUCCESS;
+                log.SystemUserId = CurrentSession.getUser().UserId;
+
+                //删除的记录数
+                int  count=(int)WebPageDal.DeleteAll();
+
+                result.DataSize = count;
+                result.IsSuccess = true;
+                result.ResultCode =  SymbolicConstant.RESULTCODE_DELETEALL_SUCCESS;
+                result.ResultMessage=SymbolicConstant.RESULTMESSAGE_DELETEALL_SUCCESS;
+
+                return result;
+            }
+            catch (Exception exception)
+            {
+                log.IsSuccessId = SymbolicConstant.ISSUCCESS_FALSE;
+                log.ResultCode = SymbolicConstant.RESULTCODE_DELETEALL_ERROR;
+                log.ResultMessage=exception.Message;
+            
+                result.IsSuccess = false;
+                result.ResultCode = SymbolicConstant.RESULTCODE_DELETEALL_ERROR;
+                result.ResultMessage = exception.Message;
+      
+                return result;
+            }
+            finally
+            {
+                OperationLogBll.Insert(log);
+            }
+
+        }   
+        
+        /// <summary>
+        /// 删除数据库<%= Table.Name%>表中的所有记录
+        /// </summary>
+        /// <param name="isLog">是否写稿日志</param>
+        /// <returns>删除结果，包括是否删除成功、记录主键等信息</returns>
+        public static ResultModel DeleteAll(bool isLog)
+        {
+            if(isLog)
+                DeleteAll();
+
+            ResultModel result = new ResultModel();
+            try
+            {
+                //删除的记录数
+                int  count=(int)WebPageDal.DeleteAll();
+
+                result.DataSize = count;
+                result.IsSuccess = true;
+                result.ResultCode =  SymbolicConstant.RESULTCODE_DELETEALL_SUCCESS;
+                result.ResultMessage=SymbolicConstant.RESULTMESSAGE_DELETEALL_SUCCESS;
+
+                return result;
+            }
+            catch (Exception exception)
+            {
+                result.IsSuccess = false;
+                result.ResultCode = SymbolicConstant.RESULTCODE_DELETEALL_ERROR;
+                result.ResultMessage = exception.Message;
+      
+                return result;
+            }
+        }
+
+    }
+}
+
+
+<script runat="template">
+     public string DataType2CSharpType(System.Data.DbType dbType)
+    {
+        switch (dbType)
+        {
+            case DbType.AnsiString:
+                return "string";
+            case DbType.AnsiStringFixedLength:
+                return "char";
+            case DbType.Binary: //Answer modified was just 0
+                return "byte[]";
+            case DbType.Boolean:
+                return "bool";
+            case DbType.Byte: //Answer modified was just 0
+                return "bytpe";
+            case DbType.Currency:
+                return "0";
+            case DbType.Date:
+                return "DateTime";
+            case DbType.DateTime:
+                return "DateTime";
+            case DbType.DateTime2:
+                return "DateTime";
+            case DbType.DateTimeOffset:
+                return "DateTime";
+            case DbType.Decimal:
+                return "decimal";
+            case DbType.Double:
+                return "double";
+            case DbType.Guid:
+                return "Guid";
+            case DbType.Int16:
+                return "int16";
+            case DbType.Int32:
+                return "int";
+            case DbType.Int64:
+                return "int64";
+            case DbType.Object:
+                return "object";
+            case DbType.SByte:
+                return "sbyte";
+            case DbType.Single:
+                return "Single";
+            case DbType.String:
+                return "string";
+            case DbType.StringFixedLength:
+                return "string";
+            case DbType.Time:
+                return "DateTime"; //return "DateTime.MaxValue";
+            case DbType.UInt16:
+                return "ushort";
+            case DbType.UInt32:
+                return "uint";
+            case DbType.UInt64:
+                return "ulong";
+            case DbType.VarNumeric:
+                return "decimal";
+            case DbType.Xml:
+                return "string";
+            default:
+                return "null";
+        }
+    } 
+     
+     public string GetModuleName(string entityName){
+        string moudleName = entityName.Substring(0, 1).ToLower()+entityName.Substring(1,entityName.Length-1);    
+        return moudleName;
+     }
+     
+     public string GetKeyName(string key){
+        string moudleName = key.Substring(0, 1).ToUpper()+key.Substring(1,key.Length-1);    
+        return moudleName;
+     }
+     
+    
+    
+</script>

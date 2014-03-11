@@ -1,0 +1,175 @@
+﻿<%@ CodeTemplate Inherits="CodeTemplate" TargetLanguage="C#" Language="C#" Description="NetTiers main template." Debug="True" ResponseEncoding="UTF-8"%>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%-- 要打印的表 --%>
+<%@ Property Name="Table" Type="TableSchema" DeepLoad="True" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="DeveloperName" Type="String" Category="Context" Description="The name to include in the comment header" %>
+
+/***********************************************************************
+ * Module: <%= Table.Name%>Dal.cs
+ * Author: <%= DeveloperName%>
+ * Modified: <%= DateTime.Now %>
+ ***********************************************************************/
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Web;
+using VidConEntity;
+using VidConUtility;
+
+namespace VidConDAL
+{
+    /// <summary>
+    /// <%= Table.Name%>的数据访问层
+    /// </summary>
+    public class <%= Table.Name%>Dal
+    {
+
+        /// <summary>
+        /// 插入一条新记录
+        /// </summary>
+        /// <param name="<%= GetModuleName(Table.Name)%>"><%= Table.Name%>实体</param>
+        /// <returns>插入记录的主键</returns>
+        public static object Insert(<%= Table.Name%> <%= GetModuleName(Table.Name)%>)
+        {
+            Object id = DataAccessUtility.Insert<<%= Table.Name%>>(<%= GetModuleName(Table.Name)%>);
+            return id;
+        }
+        
+        /// <summary>
+        /// 删除<%= Table.Name%>表中的某条记录
+        /// </summary>
+        /// <param name="user">要删除记录的对应的实体</param>
+        public static void Delete(<%= Table.Name%> <%= GetModuleName(Table.Name)%>)
+        {
+            DataAccessUtility.Delete<<%= Table.Name%>>(<%= GetModuleName(Table.Name)%>);
+        }
+
+        /// <summary>
+        /// 修改<%= Table.Name%>表中的某条记录
+        /// </summary>
+        /// <param name="user">要修改记录对应的实体</param>
+        public static void Update(<%= Table.Name%> <%= GetModuleName(Table.Name)%>)
+        {
+            DataAccessUtility.Update<<%= Table.Name%>>(<%= GetModuleName(Table.Name)%>);
+        }
+
+        /// <summary>
+        /// 根据主键获取<%= Table.Name%>表中的某条记录
+        /// </summary>
+        /// <param name="id">记录主键</param>
+        /// <returns>查询记录对应的实体</returns>
+        public static <%= Table.Name%> GetModel(Object id)
+        {
+            return DataAccessUtility.GetModel<<%= Table.Name%>>(id);
+        }
+
+        /// <summary>
+        /// 根据查询条件获取<%= Table.Name%>表中符合查询条件的记录
+        /// </summary>
+        /// <param name="queryTerms">自定义查询条件</param>
+        /// <returns>实体列表</returns>
+        public static IList<<%= Table.Name%>> GetList(QueryTerms queryTerms)
+        {            
+            return DataAccessUtility.GetList<<%= Table.Name%>>(queryTerms);
+        }
+        
+        /// <summary>
+        /// 根据查询条件获取符合查询条件的总记录数
+        /// </summary>
+        /// <param name="queryTerms">封装的查询条件</param>
+        /// <returns>总记录数</returns>
+        public static object GetTotalCount(QueryTerms queryTerms)
+        {
+            return DataAccessUtility.GetTotalCount(queryTerms);
+        }
+        
+         /// <summary>
+        /// 删除所有记录
+        /// </summary>
+        /// <returns>删除的记录数</returns>
+        public static object DeleteAll()
+        {
+            string sql = "delete from <%= Table.Name%>";
+            return DataAccessUtility.CreateSQLQuery(sql);
+        }
+
+        
+    }
+}
+
+<script runat="template">
+     public string DataType2CSharpType(System.Data.DbType dbType)
+    {
+        switch (dbType)
+        {
+            case DbType.AnsiString:
+                return "string";
+            case DbType.AnsiStringFixedLength:
+                return "string";
+            case DbType.Binary: //Answer modified was just 0
+                return "byte[]";
+            case DbType.Boolean:
+                return "bool";
+            case DbType.Byte: //Answer modified was just 0
+                return "bytpe";
+            case DbType.Currency:
+                return "0";
+            case DbType.Date:
+                return "DateTime";
+            case DbType.DateTime:
+                return "DateTime";
+            case DbType.DateTime2:
+                return "DateTime";
+            case DbType.DateTimeOffset:
+                return "DateTime";
+            case DbType.Decimal:
+                return "decimal";
+            case DbType.Double:
+                return "double";
+            case DbType.Guid:
+                return "Guid";
+            case DbType.Int16:
+                return "int16";
+            case DbType.Int32:
+                return "int";
+            case DbType.Int64:
+                return "int64";
+            case DbType.Object:
+                return "object";
+            case DbType.SByte:
+                return "sbyte";
+            case DbType.Single:
+                return "Single";
+            case DbType.String:
+                return "string";
+            case DbType.StringFixedLength:
+                return "string";
+            case DbType.Time:
+                return "DateTime"; //return "DateTime.MaxValue";
+            case DbType.UInt16:
+                return "ushort";
+            case DbType.UInt32:
+                return "uint";
+            case DbType.UInt64:
+                return "ulong";
+            case DbType.VarNumeric:
+                return "decimal";
+            case DbType.Xml:
+                return "string";
+            default:
+                return "null";
+        }
+    } 
+     
+     public string GetModuleName(string entityName){
+        string moudleName = entityName.Substring(0, 1).ToLower()+entityName.Substring(1,entityName.Length-1);    
+        return moudleName;
+     }
+    
+    
+</script>

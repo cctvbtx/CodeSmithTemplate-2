@@ -1,0 +1,420 @@
+﻿<%@ CodeTemplate Inherits="CodeTemplate" TargetLanguage="C#" Language="C#" Description="NetTiers main template." Debug="True" ResponseEncoding="UTF-8"%>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%-- 要打印的表 --%>
+<%@ Property Name="Table" Type="TableSchema" DeepLoad="True" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="DeveloperName" Type="String" Category="Context" Description="The name to include in the comment header" %>
+
+/***********************************************************************
+ * Module: <%= Table.Name%>App.ashx.cs
+ * Author: <%= DeveloperName%>
+ * Modified: <%= DateTime.Now %>
+ ***********************************************************************/
+ 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using Newtonsoft.Json;
+using NHibernate.Cfg;
+using NHibernate.Criterion;
+using VidConBLL;
+using VidConEntity;
+using VidConUtility;
+using VidConAPP.CommonClass;
+ 
+ namespace VidConAPP.AjaxServer
+{
+    /// <summary>
+    /// 一般处理程序，接受页面传递过来的参数
+    /// 根据不同的动作指令调用不同的处理方法
+    /// 返回JSON的数据给前端页面
+    /// </summary>
+    public class <%= Table.Name%>App : BaseHttpHandler
+    {
+
+        /// <summary>
+        /// 添加记录操作
+        /// </summary>
+        protected void AddRecord()
+        {
+            HttpContext context = HttpContext.Current;
+            HttpRequest request = context.Request;
+            HttpResponse response = context.Response;
+
+            <%= Table.Name%> <%=GetModuleName(Table.Name) %>= new <%= Table.Name%>();
+            <% 
+        ColumnSchemaCollection columns= Table.Columns; 
+        ColumnNameComparer com=new ColumnNameComparer();
+        columns.Sort(com);                          
+        for(int i=0;i<columns.Count;i++){
+            ColumnSchema col =columns[i];%>
+            string <%=col.Name %>=request.Params["text<%=GetPropertyName(col.Name)%>"];
+        <%} %>
+        
+        <%
+        columns= Table.Columns; 
+        com=new ColumnNameComparer();
+        columns.Sort(com);               
+        for(int i=0;i<columns.Count;i++){
+            ColumnSchema col =columns[i];
+            if(col.IsPrimaryKeyMember){%>
+            <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=Guid.NewGuid().ToString("N");
+                <%}else{//对不同类型的字段做转换处理
+                string type= DataType2CSharpType(col.DataType);
+                switch(type){
+                    case "DateTime":%>
+            <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=DateTime.Now;
+            <%;break;%>
+            <%case "bool": %>
+            if(!String.IsNullOrEmpty(<%=col.Name %>))
+                <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=Convert.ToBoolean(<%=col.Name %>);
+            <%;break;%>
+             <%case "char": %>
+            if(!String.IsNullOrEmpty(<%=col.Name %>))
+                <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=Convert.ToChar(<%=col.Name %>);
+            <%;break;%> 
+            <%case "int": %>
+            if(!String.IsNullOrEmpty(<%=col.Name %>))
+                <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=Convert.ToInt32(<%=col.Name %>);
+            <%;break;%>
+            <%default:%>
+            if(!String.IsNullOrEmpty(<%=col.Name %>))
+                <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=<%=col.Name %>;
+            <%;break;%>
+        <%}} }%>
+
+            ResultModel result = <%= Table.Name%>Bll.Insert(<%=GetModuleName(Table.Name)%>);
+            string jsonString = JsonConvert.SerializeObject(result);
+            response.Write(result);
+        }
+
+        /// <summary>
+        /// 删除操作
+        /// </summary>
+        protected void DeleteRecord()
+        {
+            HttpContext context = HttpContext.Current;
+            HttpRequest request = context.Request;
+            HttpResponse response = context.Response;
+
+            string id = request.Params["id"];
+            
+            ResultModel result = <%= Table.Name%>Bll.Delete(id);
+            string jsonString = JsonConvert.SerializeObject(result);
+            response.Write(result);
+        }
+
+        /// <summary>
+        /// 修改操作
+        /// </summary>
+        protected void UpdateRecord()
+        {
+            HttpContext context = HttpContext.Current;
+            HttpRequest request = context.Request;
+            HttpResponse response = context.Response;
+
+            string id = request.Params["id"];
+            
+            <%= Table.Name%> <%=GetModuleName(Table.Name) %> = (<%= Table.Name%>)<%= Table.Name%>Bll.Get<%= Table.Name%>ById(id).Data;
+            
+        <% 
+        columns= Table.Columns; 
+        com=new ColumnNameComparer();
+        columns.Sort(com);                          
+        for(int i=0;i<columns.Count;i++){
+            ColumnSchema col =columns[i];%>
+            string <%=col.Name %>=request.Params["text<%=GetPropertyName(col.Name)%>"];
+        <%} %>
+        
+         <% columns= Table.Columns; 
+         com=new ColumnNameComparer();
+        columns.Sort(com);
+        for(int i=0;i<columns.Count;i++){
+            ColumnSchema col =columns[i];
+            if(col.IsPrimaryKeyMember){%>
+                <%}%><%else if(col.Name=="updateTime"){%>
+            <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=DateTime.Now;
+                <%}else{
+                string type= DataType2CSharpType(col.DataType);
+                switch(type){
+                    case "DateTime":   %>
+            <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=DateTime.Now;
+            <%;break;%>
+            <%case "bool": %>
+            if(!String.IsNullOrEmpty(<%=col.Name %>))
+                <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=Convert.ToBoolean(<%=col.Name %>);
+            <%;break;%>
+            <%case "char": %>
+            if(!String.IsNullOrEmpty(<%=col.Name %>))
+                <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=Convert.ToChar(<%=col.Name %>);
+            <%;break;%> 
+            <%case "int": %>
+            if(!String.IsNullOrEmpty(<%=col.Name %>))
+                <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=Convert.ToInt32(<%=col.Name %>);
+            <%;break;%>
+            <%default: %>
+            if(<%=col.Name %>!=null)
+            <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=<%=col.Name %>;
+            <%;break;%>
+        <%}}}%>
+            
+            ResultModel result = <%= Table.Name%>Bll.Update(<%=GetModuleName(Table.Name) %>);
+            string jsonString = JsonConvert.SerializeObject(result);
+            response.Write(result);
+        }
+
+        /// <summary>
+        /// 复杂查询操作
+        /// </summary>
+        protected void QueryRecord()
+        {
+            HttpContext context = HttpContext.Current;
+            HttpRequest request = context.Request;
+            HttpResponse response = context.Response;
+
+            string pageSize = request.Params["pageSize"];
+            string pageIndex = request.Params["pageIndex"];
+            
+                <%columns= Table.Columns; 
+                com=new ColumnNameComparer();
+                columns.Sort(com);               
+                for(int i=0;i<columns.Count;i++){
+                    ColumnSchema col =columns[i];%>
+            string <%=col.Name %>=request.Params["text<%=GetPropertyName(col.Name)%>"];
+                <%} %>
+            
+            CriterionAndOrder <%=GetModuleName(Table.Name) %>CriterionAndOrder = new CriterionAndOrder();
+            <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriteriaName = typeof(<%=GetModuleName(Table.Name) %>).FullName;
+            <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriteriaAsName = "<%=getCriteriaAsName(Table.Name)%>";            
+                <%if(columns.Contains("AddTime")){%>
+            <%=GetModuleName(Table.Name) %>CriterionAndOrder.OrderList.Add(new Order("<%=getCriteriaAsName(Table.Name)%>.AddTime", false));
+                <%}else{ %>
+            <%=GetModuleName(Table.Name) %>CriterionAndOrder.OrderList.Add(new Order("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0].Name)%>", false));
+                <%}%>
+                <%for(int m=0;m<columns.Count;m++){
+                    ColumnSchema coll =columns[m];
+                    foreach(TableKeySchema tks in Table.ForeignKeys){
+                        foreach(MemberColumnSchema mcs in tks.ForeignKeyMemberColumns){
+                            if(mcs.Name == coll.Name){%>                                                                               
+            
+            CriterionAndOrder <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder = new CriterionAndOrder();
+            <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaName ="<%=coll.Name%>" ;
+                                <%if(tks.PrimaryKeyTable.Name==Table.Name){ %>
+            <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaAsName = "<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)+'_'+getCriteriaAsName(GetPropertyName(coll.Name))%>";
+                                <%}else{ %>
+            <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaAsName = "<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)%>";
+            <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaSpecification = CriteriaSpecification.LeftJoin;
+                            <%}break;
+                            }
+                        }
+                    }
+                }%>
+                
+                <%for(int i=0;i<columns.Count;i++){
+                    ColumnSchema col =columns[i];%>
+            if (!String.IsNullOrEmpty(<%=col.Name %>))
+                <%string type= DataType2CSharpType(col.DataType);
+                    switch(type){
+                        case "DateTime":%>
+                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToDateTime(<%=col.Name %>)));
+                        <%;break;%>
+                        <%case "bool": %>
+                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToBoolean(<%=col.Name %>)));
+                        <%;break;%>
+                        <%case "char": %>
+                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToChar(<%=col.Name %>)));
+                        <%;break;%> 
+                        <%case "int": %>
+                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToInt32(<%=col.Name %>)));
+                        <%;break;%>
+                        <%default: %>
+                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", <%=col.Name %>));
+                        <%;break;%>
+                    <%}
+                }%>
+            
+            ProjectionList pList = Projections.ProjectionList();
+                <%if(Table.HasPrimaryKey&&Table.PrimaryKey.MemberColumns.Count==1) {%> 
+            pList.Add(Projections.Property("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0].Name)%>").As("PrimaryKey"));
+                <%} 
+                //获取数据表的所有列，并按字母排序
+                 columns= Table.Columns; 
+                 com=new ColumnNameComparer();
+                columns.Sort(com);       
+                for(int i=0;i<columns.Count;i++){
+                    ColumnSchema col =columns[i];
+                    if(!col.IsForeignKeyMember){
+                %>        
+            pList.Add(Projections.Property("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>").As("<%=GetPropertyName(col.Name)%>"));
+                    <%}foreach(TableKeySchema tks in Table.ForeignKeys){
+                        foreach(MemberColumnSchema mcs in tks.ForeignKeyMemberColumns){
+                            //如果当前列是外键列
+                            if(mcs.Name == col.Name){%>
+                                <%if(tks.PrimaryKeyTable.Name==Table.Name){ %>
+            pList.Add(Projections.Property("<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)+'_'+getCriteriaAsName(GetPropertyName(col.Name))%>.<%=GetPropertyName(tks.PrimaryKey.MemberColumns[0].Name)%>").As("<%=GetPropertyName(col.Name)%>"));                      
+                                <%}else{ %>
+            pList.Add(Projections.Property("<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)%>.<%=GetPropertyName(tks.PrimaryKey.MemberColumns[0].Name)%>").As("<%=GetPropertyName(col.Name)%>"));                      
+                                <%}break;
+                            }
+                        }
+                    }
+                }%>        
+                    
+            QueryTerms queryTerms = new QueryTerms();
+            queryTerms.PersistentClass = typeof(<%= Table.Name%>);
+            queryTerms.ColumnList = pList;
+                <%for(int m=0;m<columns.Count;m++){
+                    ColumnSchema coll =columns[m];
+                    foreach(TableKeySchema tks in Table.ForeignKeys){%>       
+                        <%foreach(MemberColumnSchema mcs in tks.ForeignKeyMemberColumns){
+                            if(mcs.Name == coll.Name){%>                                                                               
+            queryTerms.CriterionAndOrderList.Add(<%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder);
+                                <%break;
+                            }
+                        }
+                    }
+                }%>
+            queryTerms.PageSize = Convert.ToInt32(pageSize);
+            queryTerms.PageIndex = Convert.ToInt32(pageIndex) - 1;
+
+            ResultModel result = <%= Table.Name%>Bll.Get<%= Table.Name%>List(queryTerms);
+
+            string jsonString = JsonConvert.SerializeObject(result, new JsonSerializerSettings()
+            {
+                NullValueHandling=NullValueHandling.Ignore,                
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
+
+            response.Write(jsonString);
+        }
+
+        /// <summary>
+        /// 简单查询，获取实例
+        /// </summary>
+        protected void GetModel()
+        {
+            HttpContext context = HttpContext.Current;
+            HttpRequest request = context.Request;
+            string id = request.Params["id"];
+
+            ResultModel result = <%= Table.Name%>Bll.Get<%= Table.Name%>ById(id);
+           
+            string jsonString = JsonConvert.SerializeObject(result, new JsonSerializerSettings()
+            {
+                NullValueHandling=NullValueHandling.Ignore,                
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
+
+            context.Response.Write(jsonString);
+        }
+
+        
+    }
+}
+
+
+<script runat="template">
+
+     public class ColumnNameComparer : System.Collections.Generic.IComparer<ColumnSchema>
+    {
+        public int Compare(ColumnSchema x, ColumnSchema y)
+        {
+            return (x.Name.CompareTo(y.Name));
+        }
+    }
+     // 将数据库数据类型转化为C#数据类型
+     public string DataType2CSharpType(System.Data.DbType dbType)
+    {
+        switch (dbType)
+        {
+            case DbType.AnsiString:
+                return "string";
+            case DbType.AnsiStringFixedLength:
+                return "char";
+            case DbType.Binary: //Answer modified was just 0
+                return "byte[]";
+            case DbType.Boolean:
+                return "bool";
+            case DbType.Byte: //Answer modified was just 0
+                return "bytpe";
+            case DbType.Currency:
+                return "0";
+            case DbType.Date:
+                return "DateTime";
+            case DbType.DateTime:
+                return "DateTime";
+            case DbType.DateTime2:
+                return "DateTime";
+            case DbType.DateTimeOffset:
+                return "DateTime";
+            case DbType.Decimal:
+                return "decimal";
+            case DbType.Double:
+                return "double";
+            case DbType.Guid:
+                return "Guid";
+            case DbType.Int16:
+                return "int16";
+            case DbType.Int32:
+                return "int";
+            case DbType.Int64:
+                return "int64";
+            case DbType.Object:
+                return "object";
+            case DbType.SByte:
+                return "sbyte";
+            case DbType.Single:
+                return "Single";
+            case DbType.String:
+                return "string";
+            case DbType.StringFixedLength:
+                return "string";
+            case DbType.Time:
+                return "DateTime"; //return "DateTime.MaxValue";
+            case DbType.UInt16:
+                return "ushort";
+            case DbType.UInt32:
+                return "uint";
+            case DbType.UInt64:
+                return "ulong";
+            case DbType.VarNumeric:
+                return "decimal";
+            case DbType.Xml:
+                return "string";
+            default:
+                return "null";
+        }
+    } 
+     
+    //根据实体类得到其实例名称，实体类的第一个大写字母变小写
+     public string GetModuleName(string entityName){
+        string moudleName = entityName.Substring(0, 1).ToLower()+entityName.Substring(1,entityName.Length-1);    
+        return moudleName;
+     }
+    
+     //根据表的列名得到其实体类的属性名称，第一个字母变为大写
+     public string GetPropertyName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-1);    
+        return propertyName;
+     }
+    //根据实体类句得到连接查询时的副名，实体类大写字母组合，这里如果自己连接自己就会出问题
+     public string getCriteriaAsName(string entityName){
+         string propertyName="";
+        foreach(char code in entityName)
+         if (code >= 'A' && code <= 'Z')
+             propertyName+=code;
+         return propertyName;
+    }
+    //获取外键字段对应文本字段名称的函数，截取最后一个大写字母前的字符。
+    public string GetRefTextName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-3);    
+       int lastUpperCode=0;
+        for(int i=0;i<ColumnName.Length;i++)
+         if (ColumnName[i] >= 'A' && ColumnName[i]<= 'Z')
+             lastUpperCode=i;
+        return propertyName.Substring(0,lastUpperCode)+"Name";
+     }
+</script>
