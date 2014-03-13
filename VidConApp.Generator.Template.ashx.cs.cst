@@ -50,9 +50,11 @@ using VidConAPP.CommonClass;
         ColumnNameComparer com=new ColumnNameComparer();
         columns.Sort(com);                          
         for(int i=0;i<columns.Count;i++){
-            ColumnSchema col =columns[i];%>
+            ColumnSchema col =columns[i];
+            if(!col.IsPrimaryKeyMember){
+            %>
             string <%=col.Name %>=request.Params["text<%=GetPropertyName(col.Name)%>"];
-        <%} %>
+        <%} }%>
         
         <%
         columns= Table.Columns; 
@@ -125,9 +127,10 @@ using VidConAPP.CommonClass;
         com=new ColumnNameComparer();
         columns.Sort(com);                          
         for(int i=0;i<columns.Count;i++){
-            ColumnSchema col =columns[i];%>
+            ColumnSchema col =columns[i];
+            if(!col.IsPrimaryKeyMember){%>            
             string <%=col.Name %>=request.Params["text<%=GetPropertyName(col.Name)%>"];
-        <%} %>
+        <%} }%>
         
          <% columns= Table.Columns; 
          com=new ColumnNameComparer();
@@ -187,7 +190,7 @@ using VidConAPP.CommonClass;
                 <%} %>
             
             CriterionAndOrder <%=GetModuleName(Table.Name) %>CriterionAndOrder = new CriterionAndOrder();
-            <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriteriaName = typeof(<%=GetModuleName(Table.Name) %>).FullName;
+            <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriteriaName = typeof(<%=Table.Name %>).FullName;
             <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriteriaAsName = "<%=getCriteriaAsName(Table.Name)%>";            
                 <%if(columns.Contains("AddTime")){%>
             <%=GetModuleName(Table.Name) %>CriterionAndOrder.OrderList.Add(new Order("<%=getCriteriaAsName(Table.Name)%>.AddTime", false));
@@ -201,9 +204,10 @@ using VidConAPP.CommonClass;
                             if(mcs.Name == coll.Name){%>                                                                               
             
             CriterionAndOrder <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder = new CriterionAndOrder();
-            <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaName ="<%=coll.Name%>" ;
+            <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaName ="<%=GetRefEntityName(coll.Name)%>" ;
                                 <%if(tks.PrimaryKeyTable.Name==Table.Name){ %>
             <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaAsName = "<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)+'_'+getCriteriaAsName(GetPropertyName(coll.Name))%>";
+             <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaSpecification = CriteriaSpecification.LeftJoin;
                                 <%}else{ %>
             <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaAsName = "<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)%>";
             <%=GetModuleName(tks.PrimaryKeyTable.Name) %>CriterionAndOrder.CriteriaSpecification = CriteriaSpecification.LeftJoin;
@@ -219,19 +223,19 @@ using VidConAPP.CommonClass;
                 <%string type= DataType2CSharpType(col.DataType);
                     switch(type){
                         case "DateTime":%>
-                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToDateTime(<%=col.Name %>)));
+                <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToDateTime(<%=col.Name %>)));
                         <%;break;%>
                         <%case "bool": %>
-                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToBoolean(<%=col.Name %>)));
+                <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToBoolean(<%=col.Name %>)));
                         <%;break;%>
                         <%case "char": %>
-                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToChar(<%=col.Name %>)));
+                <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToChar(<%=col.Name %>)));
                         <%;break;%> 
                         <%case "int": %>
-                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToInt32(<%=col.Name %>)));
+                <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", Convert.ToInt32(<%=col.Name %>)));
                         <%;break;%>
                         <%default: %>
-                criterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", <%=col.Name %>));
+                <%=GetModuleName(Table.Name) %>CriterionAndOrder.CriterionList.Add(Restrictions.Eq("<%=getCriteriaAsName(Table.Name)%>.<%=GetPropertyName(col.Name)%>", <%=col.Name %>));
                         <%;break;%>
                     <%}
                 }%>
@@ -265,7 +269,8 @@ using VidConAPP.CommonClass;
                     
             QueryTerms queryTerms = new QueryTerms();
             queryTerms.PersistentClass = typeof(<%= Table.Name%>);
-            queryTerms.ColumnList = pList;
+            queryTerms.ColumnList = pList;            
+            queryTerms.CriterionAndOrderList.Add(<%=GetModuleName(Table.Name) %>CriterionAndOrder);
                 <%for(int m=0;m<columns.Count;m++){
                     ColumnSchema coll =columns[m];
                     foreach(TableKeySchema tks in Table.ForeignKeys){%>       
@@ -416,5 +421,14 @@ using VidConAPP.CommonClass;
          if (ColumnName[i] >= 'A' && ColumnName[i]<= 'Z')
              lastUpperCode=i;
         return propertyName.Substring(0,lastUpperCode)+"Name";
+     }
+         //多对一关系，存放一端对象名称。外键字段对应引用类属性名称，截取最后一个大写字母前的字符，加后缀Ref
+    public string GetRefEntityName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-3);    
+       int lastUpperCode=0;
+        for(int i=0;i<ColumnName.Length;i++)
+         if (ColumnName[i] >= 'A' && ColumnName[i]<= 'Z')
+             lastUpperCode=i;
+        return propertyName.Substring(0,lastUpperCode)+"Ref";
      }
 </script>

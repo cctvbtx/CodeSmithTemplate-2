@@ -1,4 +1,4 @@
-﻿<%@ Template Language="C#" TargetLanguage="Text" %>
+﻿<%@ Template Language="C#" OutputType="None" TargetLanguage="Text" %>
 
 <%-- 加载访问数据库的组件SchemaExplorer,并声明其使用的命名空间 --%>
 <%@ Assembly Name="SchemaExplorer"%>

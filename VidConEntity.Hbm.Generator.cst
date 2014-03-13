@@ -157,6 +157,7 @@ private string classDirectory = String.Empty;
                 Template.SetProperty("Table",table);
                 Template.SetProperty("DeveloperName","MengXianzhi");
                 //文件输出
+              if(!File.Exists(FileDirectory ))
                 Template.RenderToFile(FileDirectory,true);
             
         }
@@ -169,7 +170,7 @@ private string classDirectory = String.Empty;
         hbm.AssemblyName = AssemblyName;
         hbm.EntityNamespace = EntityNamespace;
         string FileDirectory = EntityMapOutputDirectory +"\\"+ entity.Name +".hbm.xml";
-        if(!File.Exists(EntityMapOutputDirectory ))
+        if(!File.Exists(FileDirectory ))
         hbm.RenderToFile(GetOutputFile(FileDirectory, null, "BuildAction", 3), true);
     }
   

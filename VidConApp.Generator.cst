@@ -53,10 +53,12 @@ private void GenerateAppClasses()
 
             ashxTemplate.SetProperty("Table",table);
             ashxTemplate.SetProperty("DeveloperName","MengXianzhi");
+            if(!File.Exists(ashxFileDirectory))
             ashxTemplate.RenderToFile(ashxFileDirectory,true);
 
             csTemplate.SetProperty("Table",table);
             csTemplate.SetProperty("DeveloperName","MengXianzhi");
+            if(!File.Exists(csFileDirectory))
             csTemplate.RenderToFile(csFileDirectory,true);
             
         }

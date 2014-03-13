@@ -51,9 +51,10 @@
         </composite-id>
     <% } else { %>
         <% IProperty property = SourceEntity.Key.Properties.First(); %>
-        <id name="<%= property.Name %>" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %>>
+        <id name="<%= GetModuleName(property.KeyName)%>" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %>>
             <generator class="<%= property.ExtendedProperties[NHibernateUtilities.GeneratorClass] %>" />
         </id>
+        <property name="PrimaryKey" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %> lazy="false"/> 
     <% } %>
     <% // Version %>
     <% IProperty rowVersion = GetRowVersion(); %>
@@ -64,14 +65,14 @@
     <% foreach(IProperty property in SourceEntity.Properties) { %>
         <% if (IsViewCompositeKey()) { break; } %>
         <% if (IsKey(property) || IsRowVersion(property)) { continue; } %>
-        <property name="<%= property.Name %>" column="<%= property.GetSafeName() %>" type="<%= property.SystemType%>" not-null="<%= property.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(property) %> lazy="true"/> 
+        <property name="<%= property.Name %>" column="<%= property.GetSafeName() %>" type="<%= property.SystemType%>" not-null="<%= property.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(property) %> lazy="false"/> 
     <% } %>
     <% // Associations %>
     <% IEnumerable<IAssociation> associations = SourceEntity.Associations.Except(foriegnKeyAssociations); %>
     <% foreach(IAssociation association in associations) { %>
         <% // Many-To-One %>
         <% if (association.AssociationType == AssociationType.ManyToOne || association.AssociationType == AssociationType.ManyToZeroOrOne) { %>
-        <many-to-one name="<%= GetRefEntityName(association.Properties[0].Property.GetSafeName())%>" class="<%= association.ForeignEntity.Name %>" not-null="<%= association.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(association) %>>
+        <many-to-one name="<%= GetRefEntityName(association.Properties[0].Property.Name)%>" class="<%= association.ForeignEntity.Name %>" not-null="<%= association.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(association) %>>
             <% foreach(AssociationProperty associationProperty in association.Properties) { %>
             <column name="<%= associationProperty.Property.GetSafeName() %>" />
             <% } %>
@@ -200,6 +201,11 @@
         for(int i=0;i<ColumnName.Length;i++)
          if (ColumnName[i] >= 'A' && ColumnName[i]<= 'Z')
              lastUpperCode=i;
-        return propertyName.Substring(0,lastUpperCode)+"Ref]";
+        return propertyName.Substring(0,lastUpperCode)+"Ref";
+     }
+    //第一个字母大写
+public string GetModuleName(string entityName){
+        string moudleName = entityName.Substring(0, 1).ToUpper()+entityName.Substring(1,entityName.Length-1);    
+        return moudleName;
      }
 </script>

@@ -1,4 +1,4 @@
-﻿<%@ Template Language="C#" TargetLanguage="Text" %>
+﻿<%@ Template OutputType="None" Language="C#" TargetLanguage="Text" %>
 
 <%-- 加载访问数据库的组件SchemaExplorer,并声明其使用的命名空间 --%>
 <%@ Assembly Name="SchemaExplorer"%>
@@ -8,7 +8,7 @@
 <%@ Property Name="SourceDatabase" Type="SchemaExplorer.DatabaseSchema" DeepLoad="True" Optional="False" Category="01. GettingStarted - Required" Description="Database that the tables views, and storedprocedures should be based on. IMPORTANT!!! If SourceTables and SourceViews areleft blank, the Entire Database will then be generated."%>
 
 <%-- 注册实体层Entity模板 --%>
-<%@ Register Name="EntityTemplate" Template="VidConDal.Template.cst" MergeProperties="Flase" ExcludeProperties=""%>
+<%@ Register Name="EntityTemplate" Template="VidConDal.Generator.Template.cst" MergeProperties="Flase" ExcludeProperties=""%>
 
 代码
 
