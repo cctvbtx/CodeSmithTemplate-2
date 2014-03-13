@@ -65,10 +65,15 @@
     <% foreach(IProperty property in SourceEntity.Properties) { %>
         <% if (IsViewCompositeKey()) { break; } %>
         <% if (IsKey(property) || IsRowVersion(property)) { continue; } %>
-        <property name="<%= property.Name %>" column="<%= property.GetSafeName() %>" type="<%= property.SystemType%>" not-null="<%= property.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(property) %> lazy="false"/> 
+        <property name="<%= property.Name %>" column="<%= property.GetSafeName() %>" type="<%=property.BaseSystemType %>" not-null="<%= property.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(property) %> lazy="false"/> 
     <% } %>
     <% // Associations %>
     <% IEnumerable<IAssociation> associations = SourceEntity.Associations.Except(foriegnKeyAssociations); %>
+    <% foreach(IAssociation association in associations) { %>
+        <% // Many-To-One %>
+        <% if (association.AssociationType == AssociationType.ManyToOne || association.AssociationType == AssociationType.ManyToZeroOrOne) { %>
+        <property name="<%= association.Properties[0].Property.Name%>" column="<%= association.Properties[0].Property.GetSafeName() %>" type="<%=association.Properties[0].Property.BaseSystemType %>" not-null="<%= association.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(association) %> lazy="false"/> 
+        <% continue; }} %>   
     <% foreach(IAssociation association in associations) { %>
         <% // Many-To-One %>
         <% if (association.AssociationType == AssociationType.ManyToOne || association.AssociationType == AssociationType.ManyToZeroOrOne) { %>
@@ -207,5 +212,14 @@
 public string GetModuleName(string entityName){
         string moudleName = entityName.Substring(0, 1).ToUpper()+entityName.Substring(1,entityName.Length-1);    
         return moudleName;
+     }
+    //获取外键字段对应文本字段名称的函数，截取最后一个大写字母前的字符。
+    public string GetRefTextName(string ColumnName){
+        string propertyName = ColumnName.Substring(0, 1).ToUpper()+ColumnName.Substring(1,ColumnName.Length-3);    
+       int lastUpperCode=0;
+        for(int i=0;i<ColumnName.Length;i++)
+         if (ColumnName[i] >= 'A' && ColumnName[i]<= 'Z')
+             lastUpperCode=i;
+        return propertyName.Substring(0,lastUpperCode)+"Name";
      }
 </script>

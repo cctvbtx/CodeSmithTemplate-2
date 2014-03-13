@@ -85,7 +85,7 @@ namespace VidConEntity
              if(tks.ForeignKeyTable.Name!=Table.Name)
                 {%>
         [JsonIgnore]
-        public virtual <%=tks.ForeignKeyTable.Name%> <%=GetRefListName(tks.ForeignKeyTable.Name)%>{ get; set; }             
+        public virtual IList<<%=tks.ForeignKeyTable.Name%>> <%=GetRefListName(tks.ForeignKeyTable.Name)%>{ get; set; }             
         <% }}%> 
         
     }

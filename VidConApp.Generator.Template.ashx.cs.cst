@@ -260,7 +260,7 @@ using VidConAPP.CommonClass;
                                 <%if(tks.PrimaryKeyTable.Name==Table.Name){ %>
             pList.Add(Projections.Property("<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)+'_'+getCriteriaAsName(GetPropertyName(col.Name))%>.<%=GetPropertyName(tks.PrimaryKey.MemberColumns[0].Name)%>").As("<%=GetPropertyName(col.Name)%>"));                      
                                 <%}else{ %>
-            pList.Add(Projections.Property("<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)%>.<%=GetPropertyName(tks.PrimaryKey.MemberColumns[0].Name)%>").As("<%=GetPropertyName(col.Name)%>"));                      
+            pList.Add(Projections.Property("<%=getCriteriaAsName(tks.PrimaryKeyTable.Name)%>.<%=GetPropertyName(tks.PrimaryKey.MemberColumns[0].Name)%>").As("<%=GetPropertyName(col.Name)%>"));                                  
                                 <%}break;
                             }
                         }
