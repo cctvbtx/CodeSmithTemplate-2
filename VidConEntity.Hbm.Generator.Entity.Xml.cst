@@ -54,7 +54,7 @@
         <id name="<%= GetModuleName(property.KeyName)%>" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %>>
             <generator class="<%= property.ExtendedProperties[NHibernateUtilities.GeneratorClass] %>" />
         </id>
-        <property name="PrimaryKey" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %> lazy="false"/> 
+        <property name="PrimaryKey" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %> lazy="false" insert="false" add="false" update="false"/> 
     <% } %>
     <% // Version %>
     <% IProperty rowVersion = GetRowVersion(); %>
@@ -65,8 +65,11 @@
     <% foreach(IProperty property in SourceEntity.Properties) { %>
         <% if (IsViewCompositeKey()) { break; } %>
         <% if (IsKey(property) || IsRowVersion(property)) { continue; } %>
+        <%  if(property.Name=="AddTime"){%>
+        <property name="<%= property.Name %>" column="<%= property.GetSafeName() %>" type="<%=property.BaseSystemType %>" not-null="<%= property.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(property) %> lazy="false" update="false"/> 
+        <%}else{%>
         <property name="<%= property.Name %>" column="<%= property.GetSafeName() %>" type="<%=property.BaseSystemType %>" not-null="<%= property.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(property) %> lazy="false"/> 
-    <% } %>
+    <% }} %>
     <% // Associations %>
     <% IEnumerable<IAssociation> associations = SourceEntity.Associations.Except(foriegnKeyAssociations); %>
     <% foreach(IAssociation association in associations) { %>
@@ -77,7 +80,7 @@
     <% foreach(IAssociation association in associations) { %>
         <% // Many-To-One %>
         <% if (association.AssociationType == AssociationType.ManyToOne || association.AssociationType == AssociationType.ManyToZeroOrOne) { %>
-        <many-to-one name="<%= GetRefEntityName(association.Properties[0].Property.Name)%>" class="<%= association.ForeignEntity.Name %>" not-null="<%= association.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(association) %>>
+        <many-to-one name="<%= GetRefEntityName(association.Properties[0].Property.Name)%>" class="<%= association.ForeignEntity.Name %>" not-null="<%= association.ExtendedProperties[NHibernateUtilities.NotNull] %>" <%= GetAttributes(association) %> insert="false" update="false">
             <% foreach(AssociationProperty associationProperty in association.Properties) { %>
             <column name="<%= associationProperty.Property.GetSafeName() %>" />
             <% } %>
@@ -85,7 +88,7 @@
         <% continue; } %>
         <% // One-To-Many %>
         <% if(association.ForeignEntity.Name!=SourceEntity.Name)if (association.AssociationType == AssociationType.OneToMany || association.AssociationType == AssociationType.ZeroOrOneToMany) { %>
-        <bag name="<%= association.Name %>" inverse="true" <%= GetAttributes(association) %>>
+        <bag name="<%= association.Name %>" inverse="true" <%= GetAttributes(association) %> insert="false" update="false">
             <key>
             <% foreach (AssociationProperty associationProperty in association.Properties) { %>
                 <column name="<%= associationProperty.ForeignProperty.GetSafeName() %>" />
@@ -96,7 +99,7 @@
         <% continue; } %>
         <% // Many-To-Many %>
         <% if (association.AssociationType == AssociationType.ManyToMany) { %>
-        <bag name="<%= association.Name %>" table="<%= association.ForeignEntity.GetSafeName() %>" inverse="false" <%= GetAttributes(association) %>>
+        <bag name="<%= association.Name %>" table="<%= association.ForeignEntity.GetSafeName() %>" inverse="false" <%= GetAttributes(association) %> insert="false" update="false">
             <key>
             <% foreach (AssociationProperty associationProperty in association.Properties) { %>
                 <column name="<%= associationProperty.ForeignProperty.GetSafeName() %>" />

@@ -11,9 +11,12 @@
     <title>修改信息</title>
     <link href="Styles/AddOrEditPage.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="Styles/validationEngine.jquery.css" type="text/css" />
+    <link href="Scripts/jquery-ui-1.10.0/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <link href="Scripts/jquery-ui-1.10.0/themes/base/jquery.ui.autocomplete.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="Scripts/jQuery-1.9.1.js"></script>
     <script type="text/javascript" src="Scripts/jquery.validationEngine-cn.js"></script>
     <script type="text/javascript" src="Scripts/jquery.validationEngine.js"></script>
+    <script type="text/javascript" src="../Scripts/jquery-ui-1.10.0/ui/jquery-ui.js"></script>
     <script type="text/javascript" src="Scripts/Common.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
@@ -25,6 +28,9 @@
 <body>
     <div class="container">
         <form id="edit<%=Table.Name%>Form" runat="server">
+        <%if(Table.PrimaryKey.MemberColumns.Count==1){ %>
+        <input id="text<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0])%>" name="text<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0])%>" type="text" size="35" class="hidden" />
+        <%} %>
         <table class="mainTable">
             <tr>
                 <td class="mainTable_TitleTd" colspan="4">
@@ -32,10 +38,12 @@
                 </td>
             </tr>
             <%
-            ColumnSchemaCollection columns= Table.Columns; 
+            ColumnSchemaCollection columns= Table..Columns; 
             int i=0;
             while(i<columns.Count){
                 ColumnSchema col =columns[i];
+                if(col.IsPrimaryKeyMember)
+                    continue;
                 if(i==columns.Count-1){
             %>
            <tr>

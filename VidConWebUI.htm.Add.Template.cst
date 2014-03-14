@@ -13,9 +13,12 @@
     <title>添加新记录</title>
     <link href="Styles/AddOrEditPage.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="Styles/validationEngine.jquery.css" type="text/css" />
+    <link href="Scripts/jquery-ui-1.10.0/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <link href="Scripts/jquery-ui-1.10.0/themes/base/jquery.ui.autocomplete.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="Scripts/jQuery-1.9.1.js"></script>
     <script type="text/javascript" src="Scripts/jquery.validationEngine-cn.js"></script>
     <script type="text/javascript" src="Scripts/jquery.validationEngine.js"></script>
+    <script type="text/javascript" src="../Scripts/jquery-ui-1.10.0/ui/jquery-ui.js"></script>
     <script type="text/javascript" src="Scripts/Common.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {

@@ -137,8 +137,9 @@ using VidConAPP.CommonClass;
         columns.Sort(com);
         for(int i=0;i<columns.Count;i++){
             ColumnSchema col =columns[i];
-            if(col.IsPrimaryKeyMember){%>
-                <%}%><%else if(col.Name=="updateTime"){%>
+            if(col.IsPrimaryKeyMember) continue;
+            if(col.Name=="AddTime") continue;%>            
+            <%if(col.Name=="updateTime"){%>
             <%=GetModuleName(Table.Name) %>.<%=GetPropertyName(col.Name)%>=DateTime.Now;
                 <%}else{
                 string type= DataType2CSharpType(col.DataType);
