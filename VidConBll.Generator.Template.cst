@@ -10,6 +10,7 @@
 /***********************************************************************
  * Module:  <%= Table.Name%>Bll.cs
  * Author: <%= DeveloperName%>
+ * Created:  2013/5/17 12:33:19
  * Modified: <%= DateTime.Now %>
  ***********************************************************************/
 
@@ -402,6 +403,7 @@ namespace VidConBLL
                 <%= GetModuleName(Table.Name)%>List = (List<<%= Table.Name%>>)(<%= Table.Name%>Dal.GetList(queryTerms));                
                 totalCount=Convert.ToInt32(SystemUserDal.GetTotalCount(queryTerms));
                 
+                log.TotalCount = totalCount;
                 result.Data = <%= GetModuleName(Table.Name)%>List;
                 result.DataSize = totalCount;
                 result.IsSuccess = true;
@@ -489,6 +491,7 @@ namespace VidConBLL
                 //删除的记录数
                 int  count=(int)WebPageDal.DeleteAll();
 
+                log.TotalCount = count;
                 result.DataSize = count;
                 result.IsSuccess = true;
                 result.ResultCode =  SymbolicConstant.RESULTCODE_DELETEALL_SUCCESS;

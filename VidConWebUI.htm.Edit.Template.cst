@@ -29,7 +29,7 @@
     <div class="container">
         <form id="edit<%=Table.Name%>Form" runat="server">
         <%if(Table.PrimaryKey.MemberColumns.Count==1){ %>
-        <input id="text<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0])%>" name="text<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0])%>" type="text" size="35" class="hidden" />
+        <input id="text<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0].Name)%>" name="text<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0].Name)%>" type="text" size="35" class="hidden" />
         <%} %>
         <table class="mainTable">
             <tr>
@@ -38,12 +38,14 @@
                 </td>
             </tr>
             <%
-            ColumnSchemaCollection columns= Table..Columns; 
+            ColumnSchemaCollection columns= Table.Columns; 
             int i=0;
             while(i<columns.Count){
                 ColumnSchema col =columns[i];
-                if(col.IsPrimaryKeyMember)
+                if(col.IsPrimaryKeyMember){
+                    i++;
                     continue;
+                }
                 if(i==columns.Count-1){
             %>
            <tr>
