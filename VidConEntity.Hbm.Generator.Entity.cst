@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace VidConEntity
+namespace HelMagEntity
 {
     /// <summary>
     /// 实体类<%= Table.Name%>，<%=Table.Description%>

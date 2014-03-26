@@ -3,7 +3,7 @@
 <%-- 加载访问数据库的组件SchemaExplorer,并声明其使用的命名空间 --%>
 <%@ Assembly Name="SchemaExplorer"%>
 <%@ Import Namespace="SchemaExplorer"%>
-
+<%@ Import Namespace="System.IO"%>
 <%-- 数据库 --%>
 <%@ Property Name="SourceDatabase" Type="SchemaExplorer.DatabaseSchema" DeepLoad="True" Optional="False" Category="01. GettingStarted - Required" Description="Database that the tables views, and storedprocedures should be based on. IMPORTANT!!! If SourceTables and SourceViews areleft blank, the Entire Database will then be generated."%>
 
@@ -44,6 +44,7 @@ private void GenerateEntityClasses()
             //生成模板
             Template.SetProperty("Table",table);
             Template.SetProperty("DeveloperName","MengXianzhi");
+            if(!File.Exists(FileDirectory))
             //文件输出
             Template.RenderToFile(FileDirectory,true);
             Debug.WriteLine(FileDirectory +" 创建成功.");

@@ -21,12 +21,12 @@ using System.Web;
 using Newtonsoft.Json;
 using NHibernate.Cfg;
 using NHibernate.Criterion;
-using VidConBLL;
-using VidConEntity;
-using VidConUtility;
-using VidConAPP.CommonClass;
+using HelMagBLL;
+using HelMagEntity;
+using HelMagUtility;
+using HelMagAPP.CommonClass;
  
- namespace VidConAPP.AjaxServer
+ namespace HelMagAPP.AjaxServer
 {
     /// <summary>
     /// 一般处理程序，接受页面传递过来的参数

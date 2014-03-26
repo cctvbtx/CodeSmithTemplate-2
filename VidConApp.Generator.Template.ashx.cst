@@ -9,4 +9,4 @@
 <%@ Property Name="DeveloperName" Type="String" Category="Context" Description="The name to include in the comment header" %>
 <%string sub="%";%>
 <%sub=sub+">";%>
-<%Response.Write("<%"); %>@ WebHandler Language="C#" CodeBehind="<%=Table.Name%>App.ashx.cs" Class="VidConAPP.AjaxServer.<%=Table.Name%>App" <%Response.Write(sub);%>
+<%Response.Write("<%"); %>@ WebHandler Language="C#" CodeBehind="<%=Table.Name%>App.ashx.cs" Class="HelMagAPP.AjaxServer.<%=Table.Name%>App" <%Response.Write(sub);%>
