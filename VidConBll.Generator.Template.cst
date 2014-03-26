@@ -43,9 +43,9 @@ namespace HelMagBLL
             object id = "";
             try
             {
-                log.LogId = Guid.NewGuid().ToString("N");
-                log.SystemUserId = CurrentSession.getUser().UserId;                                
-                log.OperationType = SymbolicConstant.OPERATIONTYPE_INSERT;
+                log.OperationLogId = Guid.NewGuid().ToString("N");
+                log.UserId = CurrentSession.getUser().UserId;                                
+                log.OperationTypeCode = SymbolicConstant.OPERATIONTYPE_INSERT;
                 log.OperationContent = SymbolicConstant.OPERATIONCONTENT_INSERT;
                 log.AddTime = DateTime.Now;
                 log.OperationTable = typeof(<%=Table.Name%>).Name;                  
@@ -130,9 +130,9 @@ namespace HelMagBLL
             ResultModel result = new ResultModel();
             try
             {                
-                log.LogId = System.Guid.NewGuid().ToString("N");
-                log.SystemUserId = CurrentSession.getUser().UserId;
-                log.OperationType = SymbolicConstant.OPERATIONTYPE_DELETE;
+                log.OperationLogId = System.Guid.NewGuid().ToString("N");
+                log.UserId = CurrentSession.getUser().UserId;
+                log.OperationTypeCode = SymbolicConstant.OPERATIONTYPE_DELETE;
                 log.OperationContent = SymbolicConstant.OPERATIONCONTENT_DELETE;
                 log.AddTime = DateTime.Now;
                 log.ObjectRecordId = <%= GetModuleName(Table.Name)%>Id;
@@ -220,13 +220,13 @@ namespace HelMagBLL
 
                 log.AddTime = DateTime.Now;
                 log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
-                log.LogId = System.Guid.NewGuid().ToString("N");
+                log.OperationLogId = System.Guid.NewGuid().ToString("N");
                 log.OperationContent = SymbolicConstant.OPERATIONCONTENT_UPDATE;
                 log.OperationTable = typeof(<%=Table.Name%>).Name;
-                log.OperationType = SymbolicConstant.OPERATIONTYPE_UPDATE;
+                log.OperationTypeCode = SymbolicConstant.OPERATIONTYPE_UPDATE;
                 log.ResultCode = SymbolicConstant.RESULTCODE_UPDATE_SUCCESS;
                 log.ResultMessage=SymbolicConstant.RESULTMESSAGE_UPDATE_SUCCESS;
-                log.SystemUserId = CurrentSession.getUser().UserId;
+                log.UserId = CurrentSession.getUser().UserId;
 
                 log.ObjectRecordId = <%if(Table.HasPrimaryKey){%><%= GetModuleName(Table.Name)%>.<%if(DataType2CSharpType(Table.PrimaryKey.MemberColumns[0].DataType)!="string"){%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%>.ToString()<%}else{%><%=GetKeyName(Table.PrimaryKey.MemberColumns[0].Name)%><%}}else{%>null<%}%>;
                 <%= Table.Name%>Dal.Update(<%= GetModuleName(Table.Name)%>);
@@ -309,14 +309,14 @@ namespace HelMagBLL
                 <%= GetModuleName(Table.Name)%>  = <%= Table.Name%>Dal.GetModel(<%= GetModuleName(Table.Name)%>Id);
                 
                 log.AddTime = DateTime.Now;
-                log.LogId = System.Guid.NewGuid().ToString("N");
-                log.OperationType = SymbolicConstant.OPERATIONTYPE_GETMODEL;
+                log.OperationLogId = System.Guid.NewGuid().ToString("N");
+                log.OperationTypeCode = SymbolicConstant.OPERATIONTYPE_GETMODEL;
                 log.OperationContent = SymbolicConstant.OPERATIONCONTENT_GETMODEL;
                 log.OperationTable = typeof(<%=Table.Name%>).Name;
                 log.ObjectRecordId = <%= GetModuleName(Table.Name)%>Id;
                 log.ResultCode = SymbolicConstant.RESULTCODE_GETMODEL_SUCCESS;
                 log.ResultMessage=SymbolicConstant.RESULTMESSAGE_GETMODEL_SUCCESS;
-                log.SystemUserId = CurrentSession.getUser().UserId;
+                log.UserId = CurrentSession.getUser().UserId;
                 log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
 
                 result.Data =  <%= GetModuleName(Table.Name)%>;
@@ -392,13 +392,13 @@ namespace HelMagBLL
             {
                 log.AddTime = DateTime.Now;                
                 log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
-                log.LogId = System.Guid.NewGuid().ToString("N");
+                log.OperationLogId = System.Guid.NewGuid().ToString("N");
                 log.OperationContent = SymbolicConstant.OPERATIONCONTENT_GETLIST;
                 log.OperationTable = typeof(<%=Table.Name%>).Name;
-                log.OperationType =SymbolicConstant.OPERATIONTYPE_GETLIST;
+                log.OperationTypeCode =SymbolicConstant.OPERATIONTYPE_GETLIST;
                 log.ResultCode = SymbolicConstant.RESULTCODE_GETLIST_SUCCESS;
                 log.ResultMessage=SymbolicConstant.RESULTMESSAGE_GETLIST_SUCCESS;
-                log.SystemUserId = CurrentSession.getUser().UserId;
+                log.UserId = CurrentSession.getUser().UserId;
                 
                 <%= GetModuleName(Table.Name)%>List = (List<<%= Table.Name%>>)(<%= Table.Name%>Dal.GetList(queryTerms));                
                 totalCount=Convert.ToInt32(SystemUserDal.GetTotalCount(queryTerms));
@@ -480,13 +480,13 @@ namespace HelMagBLL
             {
                 log.AddTime = DateTime.Now;
                 log.IsSuccessId = SymbolicConstant.ISSUCCESS_TRUE;
-                log.LogId = System.Guid.NewGuid().ToString("N");
+                log.OperationLogId = System.Guid.NewGuid().ToString("N");
                 log.OperationContent = SymbolicConstant.OPERATIONCONTENT_DELETEALL;
                 log.OperationTable = typeof(<%=Table.Name%>).Name;
-                log.OperationType = SymbolicConstant.OPERATIONTYPE_DELETEALL;
+                log.OperationTypeCode = SymbolicConstant.OPERATIONTYPE_DELETEALL;
                 log.ResultCode = SymbolicConstant.RESULTCODE_DELETEALL_SUCCESS;
                 log.ResultMessage=SymbolicConstant.RESULTMESSAGE_DELETEALL_SUCCESS;
-                log.SystemUserId = CurrentSession.getUser().UserId;
+                log.UserId = CurrentSession.getUser().UserId;
 
                 //删除的记录数
                 int  count=(int)WebPageDal.DeleteAll();
