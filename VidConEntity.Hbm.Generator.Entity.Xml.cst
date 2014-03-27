@@ -54,7 +54,7 @@
         <id name="<%= GetModuleName(property.KeyName)%>" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %>>
             <generator class="<%= property.ExtendedProperties[NHibernateUtilities.GeneratorClass] %>" />
         </id>
-        <property name="PrimaryKey" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %> lazy="false" insert="false" add="false" update="false"/> 
+        <property name="PrimaryKey" column="<%= property.GetSafeName() %>" type="<%= property.ExtendedProperties[NHibernateUtilities.NHibernateType] %>" <%= GetAttributes(property) %> lazy="false" insert="false" update="false"/> 
     <% } %>
     <% // Version %>
     <% IProperty rowVersion = GetRowVersion(); %>
@@ -88,7 +88,7 @@
         <% continue; } %>
         <% // One-To-Many %>
         <% if(association.ForeignEntity.Name!=SourceEntity.Name)if (association.AssociationType == AssociationType.OneToMany || association.AssociationType == AssociationType.ZeroOrOneToMany) { %>
-        <bag name="<%= association.Name %>" inverse="true" <%= GetAttributes(association) %> insert="false" update="false">
+        <bag name="<%= association.Name %>" inverse="true" <%= GetAttributes(association) %> >
             <key>
             <% foreach (AssociationProperty associationProperty in association.Properties) { %>
                 <column name="<%= associationProperty.ForeignProperty.GetSafeName() %>" />
