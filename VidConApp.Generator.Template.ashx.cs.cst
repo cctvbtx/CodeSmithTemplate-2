@@ -90,8 +90,12 @@ using HelMagAPP.CommonClass;
         <%}} }%>
 
             ResultModel result = <%= Table.Name%>Bll.Insert(<%=GetModuleName(Table.Name)%>);
-            string jsonString = JsonConvert.SerializeObject(result);
-            response.Write(result);
+            string jsonString = JsonConvert.SerializeObject(result, new JsonSerializerSettings()
+           {
+               NullValueHandling = NullValueHandling.Ignore,
+               ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+           });
+            response.Write(jsonString);
         }
 
         /// <summary>
@@ -106,8 +110,12 @@ using HelMagAPP.CommonClass;
             string id = request.Params["id"];
             
             ResultModel result = <%= Table.Name%>Bll.Delete(id);
-            string jsonString = JsonConvert.SerializeObject(result);
-            response.Write(result);
+            string jsonString = JsonConvert.SerializeObject(result, new JsonSerializerSettings()
+           {
+               NullValueHandling = NullValueHandling.Ignore,
+               ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+           });
+            response.Write(jsonString);
         }
 
         /// <summary>
@@ -167,8 +175,12 @@ using HelMagAPP.CommonClass;
         <%}}}%>
             
             ResultModel result = <%= Table.Name%>Bll.Update(<%=GetModuleName(Table.Name) %>);
-            string jsonString = JsonConvert.SerializeObject(result);
-            response.Write(result);
+            string jsonString = JsonConvert.SerializeObject(result, new JsonSerializerSettings()
+           {
+               NullValueHandling = NullValueHandling.Ignore,
+               ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+           });
+            response.Write(jsonString);
         }
 
         /// <summary>
