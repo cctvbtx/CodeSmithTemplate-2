@@ -7,7 +7,7 @@
 <%@ Property Name="Table" Type="TableSchema" DeepLoad="True" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-<head runat="server">
+<head>
     <title>修改信息</title>
     <link href="Styles/AddOrEditPage.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="Styles/validationEngine.jquery.css" type="text/css" />
@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="container">
-        <form id="edit<%=Table.Name%>Form" runat="server">
+        <form id="edit<%=Table.Name%>Form">
         <%if(Table.PrimaryKey.MemberColumns.Count==1){ %>
         <input id="text<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0].Name)%>" name="text<%=GetPropertyName(Table.PrimaryKey.MemberColumns[0].Name)%>" type="text" size="35" class="hidden" />
         <%} %>

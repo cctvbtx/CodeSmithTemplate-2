@@ -9,7 +9,7 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-<head runat="server">
+<head>
     <title>查看详细信息</title>
     <link rel="stylesheet" href="Styles/validationEngine.jquery.css" type="text/css" />
     <link href="Styles/AddOrEditPage.css" rel="stylesheet" type="text/css" />
@@ -26,7 +26,7 @@
 </head>
 <body>
     <div class="container">
-        <form id="detail<%=Table.Name%>Form" runat="server">
+        <form id="detail<%=Table.Name%>Form">
         <table class="mainTable">
             <tr>
                 <td class="mainTable_TitleTd" colspan="4">
